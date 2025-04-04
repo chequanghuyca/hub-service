@@ -8,39 +8,39 @@ import (
 )
 
 type AppError struct {
-	StatusCode 	int 	`json:"status_code"`
-	RootErr 	error 	`json:"root_err"`
-	Message 	string 	`json:"message"`
-	Log 		string 	`json:"log"`
-	Key 		string 	`json:"key"`
+	StatusCode int    `json:"status_code"`
+	RootErr    error  `json:"root_err"`
+	Message    string `json:"message"`
+	Log        string `json:"log"`
+	Key        string `json:"key"`
 }
 
 func NewErrorResponse(root error, msg, log, key string) *AppError {
 	return &AppError{
-		StatusCode: 	http.StatusBadRequest,
-		RootErr: 		root,
-		Message: 		msg,
-		Log: 			log,
-		Key: 			key,
+		StatusCode: http.StatusBadRequest,
+		RootErr:    root,
+		Message:    msg,
+		Log:        log,
+		Key:        key,
 	}
 }
 
 func NewFullErrorResponse(statusCode int, root error, msg, log, key string) *AppError {
 	return &AppError{
-		StatusCode: 	statusCode,
-		RootErr: 		root,
-		Message: 		msg,
-		Log: 			log,
-		Key: 			key,
+		StatusCode: statusCode,
+		RootErr:    root,
+		Message:    msg,
+		Log:        log,
+		Key:        key,
 	}
 }
 
 func NewUnauthorized(root error, msg, key string) *AppError {
 	return &AppError{
-		StatusCode: 	http.StatusUnauthorized,
-		RootErr: 		root,
-		Message: 		msg,
-		Key: 			key,
+		StatusCode: http.StatusUnauthorized,
+		RootErr:    root,
+		Message:    msg,
+		Key:        key,
 	}
 }
 
@@ -66,9 +66,9 @@ func (e *AppError) Error() string {
 
 func ErrDB(err error) *AppError {
 	return NewErrorResponse(
-		err, 
-		"something went wrong with DB", 
-		err.Error(), 
+		err,
+		"something went wrong with DB",
+		err.Error(),
 		"DB_ERROR",
 	)
 }
@@ -86,7 +86,7 @@ func ErrCannotListEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("Cannot list %s", strings.ToLower(entity)),
-		fmt.Sprintf("ErrCannotList%s", entity), 
+		fmt.Sprintf("ErrCannotList%s", entity),
 	)
 }
 
@@ -94,7 +94,7 @@ func ErrCannotDeleteEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("Cannot delete %s", strings.ToLower(entity)),
-		fmt.Sprintf("ErrCannotDelete%s", entity), 
+		fmt.Sprintf("ErrCannotDelete%s", entity),
 	)
 }
 
@@ -102,7 +102,7 @@ func ErrCannotUpdateEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("Cannot update %s", strings.ToLower(entity)),
-		fmt.Sprintf("ErrCannotUpdate%s", entity), 
+		fmt.Sprintf("ErrCannotUpdate%s", entity),
 	)
 }
 
@@ -110,7 +110,7 @@ func ErrCannotCreateEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("Cannot create %s", strings.ToLower(entity)),
-		fmt.Sprintf("ErrCannotCreate%s", entity), 
+		fmt.Sprintf("ErrCannotCreate%s", entity),
 	)
 }
 
@@ -118,7 +118,7 @@ func ErrCannotGetEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("Cannot get %s", strings.ToLower(entity)),
-		fmt.Sprintf("ErrCannotGet%s", entity), 
+		fmt.Sprintf("ErrCannotGet%s", entity),
 	)
 }
 
@@ -126,7 +126,7 @@ func ErrEntityDeleted(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
 		fmt.Sprintf("%s was deleted", strings.ToLower(entity)),
-		fmt.Sprintf("Err%sDeleted", entity), 
+		fmt.Sprintf("Err%sDeleted", entity),
 	)
 }
 
@@ -146,7 +146,7 @@ func ErrEntityNotFound(entity string, err error) *AppError {
 	)
 }
 
-func ErrNoPermission( err error) *AppError { 
+func ErrNoPermission(err error) *AppError {
 	return NewUnauthorized(
 		err,
 		"You don't have permission to do this action",

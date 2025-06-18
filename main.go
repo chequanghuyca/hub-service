@@ -5,6 +5,8 @@ import (
 	"hub-service/middleware"
 	"os"
 
+	_ "hub-service/docs"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -12,9 +14,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Email Service Golang
+// @title Hub Service API
 // @version 1.0
-// @description This is an email service API built with Golang and Gin.
+// @description This is a sample hub service API.
 func main() {
 	godotenv.Load()
 

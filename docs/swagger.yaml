@@ -1,0 +1,123 @@
+definitions:
+  emailmodel.EmailRequest:
+    properties:
+      body:
+        type: string
+      subject:
+        type: string
+      to:
+        type: string
+    required:
+    - body
+    - subject
+    - to
+    type: object
+  emailmodel.EmailResponsePortfolio:
+    properties:
+      email:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - message
+    - name
+    type: object
+  emailmodel.MultipleEmailRequest:
+    properties:
+      body:
+        type: string
+      listRecipient:
+        items:
+          properties:
+            email:
+              type: string
+            name:
+              type: string
+          required:
+          - email
+          - name
+          type: object
+        type: array
+      subject:
+        type: string
+    required:
+    - body
+    - listRecipient
+    - subject
+    type: object
+info:
+  contact: {}
+  description: This is a sample hub service API.
+  title: Hub Service API
+  version: "1.0"
+paths:
+  /api/email/multiple:
+    post:
+      consumes:
+      - application/json
+      description: Send emails to multiple recipients
+      parameters:
+      - description: List of email data
+        in: body
+        name: emails
+        required: true
+        schema:
+          $ref: '#/definitions/emailmodel.MultipleEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email sent successfully
+          schema:
+            type: string
+      summary: Send multiple emails
+      tags:
+      - email
+  /api/email/response-portfolio:
+    post:
+      consumes:
+      - application/json
+      description: Send a response email for portfolio inquiry
+      parameters:
+      - description: Response data
+        in: body
+        name: response
+        required: true
+        schema:
+          $ref: '#/definitions/emailmodel.EmailResponsePortfolio'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email sent successfully
+          schema:
+            type: string
+      summary: Response to portfolio inquiry
+      tags:
+      - email
+  /api/email/single:
+    post:
+      consumes:
+      - application/json
+      description: Send an email to a single recipient
+      parameters:
+      - description: Email data
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/emailmodel.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email sent successfully
+          schema:
+            type: string
+      summary: Send a single email
+      tags:
+      - email
+swagger: "2.0"

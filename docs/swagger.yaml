@@ -1,4 +1,36 @@
 definitions:
+  common.AppError:
+    properties:
+      key:
+        type: string
+      log:
+        type: string
+      message:
+        type: string
+      root_err: {}
+      status_code:
+        type: integer
+    type: object
+  common.Paging:
+    properties:
+      cursor:
+        type: string
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  common.Response:
+    properties:
+      data: {}
+      status:
+        example: success
+        type: string
+    type: object
   emailmodel.EmailRequest:
     properties:
       body:
@@ -47,6 +79,67 @@ definitions:
     - body
     - listRecipient
     - subject
+    type: object
+  hub-service_module_challenge_model.Challenge:
+    description: Contains the details of a translation challenge.
+    properties:
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 62b4c3789196e8a159933552
+        type: string
+      source_lang:
+        example: EN
+        type: string
+      target_lang:
+        example: VI
+        type: string
+      title:
+        example: Greetings
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.ChallengeCreate:
+    description: Required fields for creating a new translation challenge.
+    properties:
+      content:
+        example: Hello, world!
+        type: string
+      source_lang:
+        example: EN
+        type: string
+      target_lang:
+        example: VI
+        type: string
+      title:
+        example: Greetings
+        type: string
+    required:
+    - content
+    - source_lang
+    - target_lang
+    - title
+    type: object
+  model.ChallengeUpdate:
+    description: Fields available for updating a translation challenge. All fields
+      are optional.
+    properties:
+      content:
+        example: Good morning, everyone.
+        type: string
+      source_lang:
+        example: EN-US
+        type: string
+      target_lang:
+        example: DE
+        type: string
+      title:
+        example: Formal Greetings
+        type: string
     type: object
   model.CreateUserResponse:
     properties:
@@ -133,6 +226,43 @@ definitions:
     required:
     - refresh_token
     type: object
+  model.ScoreRequest:
+    description: Request body for scoring user's translation
+    properties:
+      challenge_id:
+        example: challenge_1
+        type: string
+      sentence_index:
+        example: 0
+        minimum: 0
+        type: integer
+      user_translation:
+        example: I see yellow flowers on the green grass.
+        type: string
+    required:
+    - challenge_id
+    - user_translation
+    type: object
+  model.ScoreResponse:
+    description: Response containing the scoring result and comparison data
+    properties:
+      deepl_translation:
+        description: DeepL's reference translation
+        example: I see yellow flowers on green grass.
+        type: string
+      original_sentence:
+        description: Original sentence in Vietnamese
+        example: Tôi thấy hoa vàng trên cỏ xanh.
+        type: string
+      score:
+        description: Similarity score (0-100)
+        example: 95.23
+        type: number
+      user_translation:
+        description: User's submitted translation
+        example: I see yellow flowers on the green grass.
+        type: string
+    type: object
   model.UpdateUserResponse:
     properties:
       data:
@@ -192,6 +322,199 @@ info:
   title: Hub Service API
   version: "1.0"
 paths:
+  /api/challenges:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of translation challenges with pagination.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
+                  type: array
+                meta:
+                  $ref: '#/definitions/common.Paging'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: List challenges
+      tags:
+      - challenges
+    post:
+      consumes:
+      - application/json
+      description: Create a new translation challenge and store it in the database.
+      parameters:
+      - description: Challenge data to create
+        in: body
+        name: challenge
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChallengeCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created. Returns the ID of the new challenge.
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: Create a new challenge
+      tags:
+      - challenges
+  /api/challenges/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a translation challenge by its unique ID.
+      parameters:
+      - description: Challenge ID (MongoDB ObjectID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Challenge not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: Delete a challenge
+      tags:
+      - challenges
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the details of a specific translation challenge by its
+        unique ID.
+      parameters:
+      - description: Challenge ID (MongoDB ObjectID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
+              type: object
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Challenge not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: Get a challenge by ID
+      tags:
+      - challenges
+    patch:
+      consumes:
+      - application/json
+      description: Update the details of an existing translation challenge by its
+        ID.
+      parameters:
+      - description: Challenge ID (MongoDB ObjectID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Challenge data to update
+        in: body
+        name: challenge
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChallengeUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: Bad request or invalid ID format
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Challenge not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: Update a challenge
+      tags:
+      - challenges
   /api/email/multiple:
     post:
       consumes:
@@ -258,6 +581,46 @@ paths:
       summary: Send a single email
       tags:
       - email
+  /api/translate/score:
+    post:
+      consumes:
+      - application/json
+      description: Score user's translation by comparing it with DeepL translation
+        using Sørensen-Dice similarity
+      parameters:
+      - description: Translation scoring request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ScoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ScoreResponse'
+              type: object
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Challenge not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error - DeepL API error or scoring error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      summary: Score user translation
+      tags:
+      - translate
   /api/users:
     get:
       consumes:

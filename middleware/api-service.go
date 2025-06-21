@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"hub-service/component/appctx"
+	challengeTransport "hub-service/module/challenge/transport"
 	ginemail "hub-service/module/email/transport"
+	translateTransport "hub-service/module/translate/transport"
 	ginuser "hub-service/module/user/transport"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +15,12 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 
 	v1.GET("", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Hello World!",
+			"message": "Hello!",
 		})
 	})
 
-	ginemail.RegisterRoutes(appCtx, v1)
 	ginuser.RegisterRoutes(appCtx, v1)
+	ginemail.RegisterRoutes(appCtx, v1)
+	translateTransport.RegisterRoutes(v1, appCtx)
+	challengeTransport.RegisterRoutes(v1, appCtx)
 }

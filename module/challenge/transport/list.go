@@ -1,0 +1,44 @@
+package transport
+
+import (
+	"hub-service/common"
+	"hub-service/component/appctx"
+	"hub-service/module/challenge/biz"
+	_ "hub-service/module/challenge/model"
+	"hub-service/module/challenge/storage"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// ListChallenge godoc
+// @Summary List challenges
+// @Description Get a list of translation challenges with pagination.
+// @Tags challenges
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Number of items per page" default(10)
+// @Success 200 {object} common.Response{data=[]model.Challenge,meta=common.Paging} "Success"
+// @Failure 400 {object} common.AppError "Bad request"
+// @Failure 500 {object} common.AppError "Internal server error"
+// @Router /api/challenges [get]
+func ListChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var paging common.Paging
+		if err := c.ShouldBind(&paging); err != nil {
+			panic(common.ErrInvalidRequest(err))
+		}
+		paging.Fulfill()
+
+		store := storage.NewStorage(appCtx.GetDatabase())
+		business := biz.NewListChallengeBiz(store)
+
+		result, err := business.ListChallenge(c.Request.Context(), &paging)
+		if err != nil {
+			panic(err)
+		}
+
+		c.JSON(http.StatusOK, common.NewSuccessResponse(result, paging, nil))
+	}
+}

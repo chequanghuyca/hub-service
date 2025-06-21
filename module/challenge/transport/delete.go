@@ -1,0 +1,42 @@
+package transport
+
+import (
+	"hub-service/common"
+	"hub-service/component/appctx"
+	"hub-service/module/challenge/biz"
+	"hub-service/module/challenge/storage"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// DeleteChallenge godoc
+// @Summary Delete a challenge
+// @Description Delete a translation challenge by its unique ID.
+// @Tags challenges
+// @Accept json
+// @Produce json
+// @Param id path string true "Challenge ID (MongoDB ObjectID)"
+// @Success 200 {object} common.Response{data=boolean} "Success"
+// @Failure 400 {object} common.AppError "Invalid ID format"
+// @Failure 404 {object} common.AppError "Challenge not found"
+// @Failure 500 {object} common.AppError "Internal server error"
+// @Router /api/challenges/{id} [delete]
+func DeleteChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := primitive.ObjectIDFromHex(c.Param("id"))
+		if err != nil {
+			panic(common.ErrInvalidRequest(err))
+		}
+
+		store := storage.NewStorage(appCtx.GetDatabase())
+		business := biz.NewDeleteChallengeBiz(store)
+
+		if err := business.DeleteChallenge(c.Request.Context(), id); err != nil {
+			panic(err)
+		}
+
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
+	}
+}

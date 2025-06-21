@@ -7,6 +7,316 @@
         "version": "1.0"
     },
     "paths": {
+        "/api/challenges": {
+            "get": {
+                "description": "Get a list of translation challenges with pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "List challenges",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/hub-service_module_challenge_model.Challenge"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/common.Paging"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new translation challenge and store it in the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "Create a new challenge",
+                "parameters": [
+                    {
+                        "description": "Challenge data to create",
+                        "name": "challenge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChallengeCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created. Returns the ID of the new challenge.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/challenges/{id}": {
+            "get": {
+                "description": "Retrieve the details of a specific translation challenge by its unique ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "Get a challenge by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Challenge ID (MongoDB ObjectID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/hub-service_module_challenge_model.Challenge"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Challenge not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a translation challenge by its unique ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "Delete a challenge",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Challenge ID (MongoDB ObjectID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Challenge not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update the details of an existing translation challenge by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "Update a challenge",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Challenge ID (MongoDB ObjectID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Challenge data to update",
+                        "name": "challenge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChallengeUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Challenge not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/email/multiple": {
             "post": {
                 "description": "Send emails to multiple recipients",
@@ -104,6 +414,70 @@
                         "description": "Email sent successfully",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/translate/score": {
+            "post": {
+                "description": "Score user's translation by comparing it with DeepL translation using Sørensen-Dice similarity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translate"
+                ],
+                "summary": "Score user translation",
+                "parameters": [
+                    {
+                        "description": "Translation scoring request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ScoreResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Challenge not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error - DeepL API error or scoring error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
                         }
                     }
                 }
@@ -492,6 +866,54 @@
         }
     },
     "definitions": {
+        "common.AppError": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "log": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "root_err": {},
+                "status_code": {
+                    "type": "integer"
+                }
+            }
+        },
+        "common.Paging": {
+            "type": "object",
+            "properties": {
+                "cursor": {
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "common.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
         "emailmodel.EmailRequest": {
             "type": "object",
             "required": [
@@ -561,6 +983,88 @@
                 },
                 "subject": {
                     "type": "string"
+                }
+            }
+        },
+        "hub-service_module_challenge_model.Challenge": {
+            "description": "Contains the details of a translation challenge.",
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "62b4c3789196e8a159933552"
+                },
+                "source_lang": {
+                    "type": "string",
+                    "example": "EN"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "example": "VI"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Greetings"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ChallengeCreate": {
+            "description": "Required fields for creating a new translation challenge.",
+            "type": "object",
+            "required": [
+                "content",
+                "source_lang",
+                "target_lang",
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                },
+                "source_lang": {
+                    "type": "string",
+                    "example": "EN"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "example": "VI"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Greetings"
+                }
+            }
+        },
+        "model.ChallengeUpdate": {
+            "description": "Fields available for updating a translation challenge. All fields are optional.",
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Good morning, everyone."
+                },
+                "source_lang": {
+                    "type": "string",
+                    "example": "EN-US"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "example": "DE"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Formal Greetings"
                 }
             }
         },
@@ -693,6 +1197,55 @@
             "properties": {
                 "refresh_token": {
                     "type": "string"
+                }
+            }
+        },
+        "model.ScoreRequest": {
+            "description": "Request body for scoring user's translation",
+            "type": "object",
+            "required": [
+                "challenge_id",
+                "user_translation"
+            ],
+            "properties": {
+                "challenge_id": {
+                    "type": "string",
+                    "example": "challenge_1"
+                },
+                "sentence_index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "user_translation": {
+                    "type": "string",
+                    "example": "I see yellow flowers on the green grass."
+                }
+            }
+        },
+        "model.ScoreResponse": {
+            "description": "Response containing the scoring result and comparison data",
+            "type": "object",
+            "properties": {
+                "deepl_translation": {
+                    "description": "DeepL's reference translation",
+                    "type": "string",
+                    "example": "I see yellow flowers on green grass."
+                },
+                "original_sentence": {
+                    "description": "Original sentence in Vietnamese",
+                    "type": "string",
+                    "example": "Tôi thấy hoa vàng trên cỏ xanh."
+                },
+                "score": {
+                    "description": "Similarity score (0-100)",
+                    "type": "number",
+                    "example": 95.23
+                },
+                "user_translation": {
+                    "description": "User's submitted translation",
+                    "type": "string",
+                    "example": "I see yellow flowers on the green grass."
                 }
             }
         },

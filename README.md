@@ -48,6 +48,8 @@ graph TD
 
 ### 1. Luồng đăng nhập và tạo Access Token
 
+Đây là quá trình người dùng cung cấp thông tin xác thực (email và password) để nhận về một `access_token`. Token này giống như một chiếc chìa khóa tạm thời để truy cập các tài nguyên khác.
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -72,6 +74,8 @@ sequenceDiagram
 
 ### 2. Luồng xác thực Access Token khi gọi API
 
+Khi đã có `access_token`, người dùng sẽ đính kèm nó vào header `Authorization` của mỗi request đến các API cần xác thực. Middleware sẽ kiểm tra tính hợp lệ của token trước khi cho phép request đi tiếp.
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -79,7 +83,7 @@ sequenceDiagram
     participant AuthMiddleware as Middleware
     participant ProtectedHandler as Handler
 
-    Client->>+Router: GET /api/users (Header: Auth)
+    Client->>+Router: GET /api/users (Header: Authorization: Bearer <token>)
     Router->>+Middleware: Run AuthMiddleware
     Middleware->>Middleware: Validate JWT Token
 

@@ -153,13 +153,17 @@ func (biz *UserBiz) DeleteUser(ctx context.Context, id primitive.ObjectID) error
 	return biz.store.Delete(ctx, id)
 }
 
-func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64) ([]model.UserResponse, error) {
-	// Calculate offset from page (page starts from 1)
+func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64, sortBy, sortOrder, search string) ([]model.UserResponse, *model.PaginationMetadata, error) {
 	offset := (page - 1) * limit
 
-	users, err := biz.store.List(ctx, limit, offset)
+	users, err := biz.store.List(ctx, limit, offset, sortBy, sortOrder, search)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	totalItems, err := biz.store.CountWithFilter(ctx, search)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	var responses []model.UserResponse
@@ -175,5 +179,18 @@ func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64) ([]model.U
 		})
 	}
 
-	return responses, nil
+	totalPages := (totalItems + limit - 1) / limit
+	hasNext := page < totalPages
+	hasPrev := page > 1
+
+	metadata := &model.PaginationMetadata{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+		HasNext:    hasNext,
+		HasPrev:    hasPrev,
+	}
+
+	return responses, metadata, nil
 }

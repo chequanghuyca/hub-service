@@ -76,15 +76,29 @@ type DeleteUserResponse struct {
 	Message string `json:"message"`
 }
 
+// PaginationMetadata contains pagination information
+type PaginationMetadata struct {
+	Page       int64 `json:"page"`
+	Limit      int64 `json:"limit"`
+	TotalItems int64 `json:"total_items"`
+	TotalPages int64 `json:"total_pages"`
+	HasNext    bool  `json:"has_next"`
+	HasPrev    bool  `json:"has_prev"`
+}
+
 type ListUsersResponse struct {
-	Status string         `json:"status"`
-	Data   []UserResponse `json:"data"`
+	Status   string             `json:"status"`
+	Data     []UserResponse     `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
 }
 
 // ListUsersRequest represents the request parameters for listing users
 type ListUsersRequest struct {
-	Page  int64 `form:"page" binding:"omitempty,min=1" example:"1"`
-	Limit int64 `form:"limit" binding:"omitempty,min=1,max=100" example:"10"`
+	Page      int64  `form:"page" binding:"omitempty,min=1" example:"1"`
+	Limit     int64  `form:"limit" binding:"omitempty,min=1,max=100" example:"10"`
+	SortBy    string `form:"sort_by" binding:"omitempty,oneof=name email created_at updated_at" example:"created_at"`
+	SortOrder string `form:"sort_order" binding:"omitempty,oneof=asc desc" example:"desc"`
+	Search    string `form:"search" binding:"omitempty" example:"huy"`
 }
 
 type ErrorResponse struct {

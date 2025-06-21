@@ -80,6 +80,8 @@ definitions:
         items:
           $ref: '#/definitions/model.UserResponse'
         type: array
+      metadata:
+        $ref: '#/definitions/model.PaginationMetadata'
       status:
         type: string
     type: object
@@ -106,6 +108,21 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/model.UserResponse'
+    type: object
+  model.PaginationMetadata:
+    properties:
+      has_next:
+        type: boolean
+      has_prev:
+        type: boolean
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
     type: object
   model.UpdateUserResponse:
     properties:
@@ -233,6 +250,69 @@ paths:
       tags:
       - email
   /api/users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of users with pagination, sorting, and search
+      parameters:
+      - description: 'Page number (minimum: 1, default: 1)'
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: 'Number of items per page (minimum: 1, maximum: 100, default:
+          10)'
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: created_at
+        description: Sort by field (name, email, created_at, updated_at)
+        enum:
+        - name
+        - email
+        - created_at
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: Sort order (asc, desc)
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Search by name or email (case-insensitive)
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns users list with pagination metadata
+          schema:
+            $ref: '#/definitions/model.ListUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List users
+      tags:
+      - users
     post:
       consumes:
       - application/json
@@ -387,48 +467,6 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: User login
-      tags:
-      - users
-  /users:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of users with pagination
-      parameters:
-      - description: 'Page number (minimum: 1, default: 1)'
-        in: query
-        minimum: 1
-        name: page
-        type: integer
-      - description: 'Number of items per page (minimum: 1, maximum: 100, default:
-          10)'
-        in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.ListUsersResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: List users
       tags:
       - users
 securityDefinitions:

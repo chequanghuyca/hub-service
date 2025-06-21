@@ -3,6 +3,7 @@ package middleware
 import (
 	"hub-service/component/appctx"
 	ginemail "hub-service/module/email/transport"
+	ginuser "hub-service/module/user/transport"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,5 +18,5 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 	})
 
 	ginemail.RegisterRoutes(appCtx, v1)
-
+	ginuser.UserRoute(appCtx, v1)
 }

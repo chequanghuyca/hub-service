@@ -12,15 +12,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type userStorage struct {
+type UserStorage struct {
 	appCtx appctx.AppContext
 }
 
-func NewUserStorage(appCtx appctx.AppContext) *userStorage {
-	return &userStorage{appCtx: appCtx}
+func NewUserStorage(appCtx appctx.AppContext) *UserStorage {
+	return &UserStorage{appCtx: appCtx}
 }
 
-func (s *userStorage) Create(ctx context.Context, userCreate *model.UserCreate) (*model.User, error) {
+func (s *UserStorage) Create(ctx context.Context, userCreate *model.UserCreate) (*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	now := time.Now()
@@ -41,7 +41,7 @@ func (s *userStorage) Create(ctx context.Context, userCreate *model.UserCreate) 
 	return user, nil
 }
 
-func (s *userStorage) GetByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+func (s *UserStorage) GetByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	var user model.User
@@ -56,7 +56,7 @@ func (s *userStorage) GetByID(ctx context.Context, id primitive.ObjectID) (*mode
 	return &user, nil
 }
 
-func (s *userStorage) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (s *UserStorage) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	var user model.User
@@ -71,7 +71,7 @@ func (s *userStorage) GetByEmail(ctx context.Context, email string) (*model.User
 	return &user, nil
 }
 
-func (s *userStorage) Update(ctx context.Context, id primitive.ObjectID, userUpdate *model.UserUpdate) (*model.User, error) {
+func (s *UserStorage) Update(ctx context.Context, id primitive.ObjectID, userUpdate *model.UserUpdate) (*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	update := bson.M{
@@ -97,14 +97,14 @@ func (s *userStorage) Update(ctx context.Context, id primitive.ObjectID, userUpd
 	return &user, nil
 }
 
-func (s *userStorage) Delete(ctx context.Context, id primitive.ObjectID) error {
+func (s *UserStorage) Delete(ctx context.Context, id primitive.ObjectID) error {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }
 
-func (s *userStorage) List(ctx context.Context, limit, offset int64) ([]*model.User, error) {
+func (s *UserStorage) List(ctx context.Context, limit, offset int64) ([]*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
 	opts := options.Find().

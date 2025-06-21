@@ -19,9 +19,10 @@ import (
 // @title Hub Service API
 // @version 1.0
 // @description This is a sample hub service API.
-// @securityDefinitions.apikey ApiKeyAuth
+// @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
+// @description Type "Bearer" followed by a space and your token.
 func main() {
 	godotenv.Load()
 

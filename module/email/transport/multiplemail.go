@@ -1,12 +1,11 @@
 package ginemail
 
 import (
-	"hub-service/common"
-	"hub-service/component/appctx"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"hub-service/component/appctx"
 	emailmodel "hub-service/module/email/model"
 	storagemail "hub-service/module/email/storage"
 )
@@ -21,18 +20,18 @@ import (
 // @Router /api/email/multiple [post]
 func MultipleMail(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req emailmodel.MultipleEmailRequest
+		var data emailmodel.MultipleEmailRequest
 
-		if err := c.ShouldBind(&req); err != nil {
-			panic(common.ErrInvalidRequest(err))
+		if err := c.ShouldBind(&data); err != nil {
+			panic(err)
 		}
 
-		err := storagemail.MultipleSendEmail(req.AddressesTo, req.Subject, req.Body)
+		err := storagemail.MultipleSendEmail(data.AddressesTo, data.Subject, data.Body)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, emailmodel.ErrSendEmail(err))
 		}
 
-		c.JSON(http.StatusOK, emailmodel.SendEmaiSuccess)
+		c.JSON(http.StatusOK, emailmodel.SendEmailResponse{Status: "success", Message: "Emails sent successfully!"})
 	}
 }

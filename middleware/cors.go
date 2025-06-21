@@ -12,11 +12,11 @@ func CorsConnect() gin.HandlerFunc {
 	godotenv.Load()
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{os.Getenv("BASE_URL_PORTFOLIO"), "http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}, // Các phương thức được phép
-		AllowHeaders:     []string{"Content-Type", "Authorization"},             // Các header được phép
-		ExposeHeaders:    []string{"Content-Length"},                            // Header trả về mà FE có thể đọc
-		AllowCredentials: true,                                                  // Cho phép gửi cookie nếu cần
+		AllowOrigins:     []string{os.Getenv("BASE_URL_PORTFOLIO"), os.Getenv("BASE_URL_LOCAL")},
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
 		MaxAge:           12 * 60 * 60,
 	}
 

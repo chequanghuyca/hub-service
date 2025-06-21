@@ -77,3 +77,35 @@ func RequireRole(requiredRole string) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// RequireRoles middleware checks if user has one of the required roles
+func RequireRoles(requiredRoles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userRole, exists := c.Get("user_role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "User role not found in token",
+			})
+			c.Abort()
+			return
+		}
+
+		hasPermission := false
+		for _, role := range requiredRoles {
+			if userRole == role {
+				hasPermission = true
+				break
+			}
+		}
+
+		if !hasPermission {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Insufficient permissions",
+			})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}

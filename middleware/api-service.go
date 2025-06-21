@@ -18,5 +18,5 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 	})
 
 	ginemail.RegisterRoutes(appCtx, v1)
-	ginuser.UserRoute(appCtx, v1)
+	ginuser.RegisterRoutes(appCtx, v1)
 }

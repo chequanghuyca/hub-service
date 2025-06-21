@@ -3,12 +3,24 @@ package common
 import "log"
 
 const (
-	DbType     = 1
-	DbTypeUser = 2
+	DbTypeUser = 1
 )
 
 const (
 	CurrentUser = "user"
+)
+
+type Requester interface {
+	GetUserId() int
+	GetEmail() string
+	GetRole() string
+}
+
+// Define roles for documentation and consistent usage
+const (
+	RoleSuperAdmin = "super_admin"
+	RoleAdmin      = "admin"
+	RoleClient     = "client"
 )
 
 func AppRecover() {

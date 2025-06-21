@@ -47,3 +47,14 @@ func ErrSendMailToUser(email string, err error) error {
 var (
 	SendEmaiSuccess = common.SimpleSuccessResponse("Email sent successfully")
 )
+
+// API Response Models for Email Module
+type SendEmailResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type EmailResponsePortfolioResponse struct {
+	Status string                 `json:"status"`
+	Data   EmailResponsePortfolio `json:"data"`
+}

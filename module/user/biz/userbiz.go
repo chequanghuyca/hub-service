@@ -47,6 +47,8 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 		Email:    userCreate.Email,
 		Password: hashedPassword,
 		Name:     userCreate.Name,
+		Avatar:   userCreate.Avatar,
+		Role:     userCreate.Role,
 	}
 
 	user, err := biz.store.Create(ctx, userCreateWithHash)
@@ -58,6 +60,8 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,
+		Avatar:    user.Avatar,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
@@ -83,7 +87,7 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	userId, _ := strconv.Atoi(user.ID.Hex()[:8]) // Convert ObjectID to int for compatibility
 	payload := tokenprovider.AccessTokenPayload{
 		UserId:    userId,
-		Role:      "user",
+		Role:      user.Role, // Use role from DB
 		Email:     user.Email,
 		FirstName: user.Name,
 		LastName:  "",
@@ -100,6 +104,8 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 			ID:        user.ID,
 			Email:     user.Email,
 			Name:      user.Name,
+			Avatar:    user.Avatar,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		},
@@ -119,6 +125,8 @@ func (biz *UserBiz) GetUserByID(ctx context.Context, id primitive.ObjectID) (*mo
 		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,
+		Avatar:    user.Avatar,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
@@ -134,6 +142,8 @@ func (biz *UserBiz) UpdateUser(ctx context.Context, id primitive.ObjectID, userU
 		ID:        user.ID,
 		Email:     user.Email,
 		Name:      user.Name,
+		Avatar:    user.Avatar,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
@@ -143,18 +153,23 @@ func (biz *UserBiz) DeleteUser(ctx context.Context, id primitive.ObjectID) error
 	return biz.store.Delete(ctx, id)
 }
 
-func (biz *UserBiz) ListUsers(ctx context.Context, limit, offset int64) ([]*model.UserResponse, error) {
+func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64) ([]model.UserResponse, error) {
+	// Calculate offset from page (page starts from 1)
+	offset := (page - 1) * limit
+
 	users, err := biz.store.List(ctx, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	var responses []*model.UserResponse
+	var responses []model.UserResponse
 	for _, user := range users {
-		responses = append(responses, &model.UserResponse{
+		responses = append(responses, model.UserResponse{
 			ID:        user.ID,
 			Email:     user.Email,
 			Name:      user.Name,
+			Avatar:    user.Avatar,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		})

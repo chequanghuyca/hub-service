@@ -5,7 +5,7 @@ import (
 	"hub-service/component/appctx"
 	"hub-service/helper"
 	emailmodel "hub-service/module/email/model"
-	storagemail "hub-service/module/email/storage"
+	storageemail "hub-service/module/email/storage"
 	"net/http"
 	"os"
 
@@ -37,7 +37,7 @@ func ResponseEmailPortfolio(appCtx appctx.AppContext) gin.HandlerFunc {
 			MyEmail: os.Getenv("SYSTEM_EMAIL"),
 		}
 
-		err := storagemail.SingleSendEmail(
+		err := storageemail.SingleSendEmail(
 			req.Email,
 			helper.GetSubjectMailResponse(),
 			helper.GetBodyMailResponse(dataSendContact),
@@ -47,12 +47,33 @@ func ResponseEmailPortfolio(appCtx appctx.AppContext) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, emailmodel.ErrSendEmail(err))
 		}
 
-		errSendMe := storagemail.ResponseMeEmail(req.Message)
+		errSendMe := storageemail.ResponseMeEmail(req.Message)
 
 		if errSendMe != nil {
 			c.JSON(http.StatusInternalServerError, emailmodel.ErrSendEmail(errSendMe))
 		}
 
 		c.JSON(http.StatusOK, emailmodel.SendEmaiSuccess)
+	}
+}
+
+func ResponseMeMail(appCtx appctx.AppContext) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var data emailmodel.EmailRequest
+
+		if err := c.ShouldBind(&data); err != nil {
+			panic(err)
+		}
+
+		// The purpose seems to be sending a notification email to the system.
+		// The message will be the body from the request.
+		err := storageemail.ResponseMeEmail(data.Body)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// This response is for the client that triggered the action
+		c.JSON(http.StatusOK, emailmodel.SendEmailResponse{Status: "success", Message: "Notification sent successfully!"})
 	}
 }

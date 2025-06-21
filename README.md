@@ -11,38 +11,30 @@ Một backend service được xây dựng bằng Go và Gin framework, cung c�
 -   **Tài liệu API**: Tự động sinh tài liệu API với Swagger.
 -   **Quản lý cấu hình**: Dễ dàng quản lý cấu hình môi trường qua file `.env`.
 
-## 🏗️ Kiến trúc
-
-Dự án tuân theo kiến trúc phân lớp (Layered Architecture), lấy cảm hứng từ Clean Architecture để đảm bảo code được rõ ràng, dễ bảo trì và mở rộng.
+## 🏗️ Kiến trúc Tổng quan
 
 ```mermaid
-graph TD
+graph TD;
     subgraph "Client"
-        A[User/Client Application]
+        A["User/Client Application"];
     end
 
     subgraph "Hub Service"
-        B(Gin Router)
-        C{Middleware}
-        D[Transport Layer<br/>(Handlers)]
-        E[Business Logic Layer<br/>(Biz)]
-        F[Storage Layer<br/>(Storage)]
-        G((MongoDB))
+        B("Gin Router");
+        C{"Middleware"};
+        D["Transport Layer<br>(Handlers)"];
+        E["Business Logic Layer<br>(Biz)"];
+        F["Storage Layer<br>(Storage)"];
+        G(("MongoDB"));
     end
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
+    A --> B;
+    B --> C;
+    C --> D;
+    D --> E;
+    E --> F;
+    F --> G;
 ```
-
--   `transport`: Chịu trách nhiệm xử lý các request HTTP và response (sử dụng Gin handlers).
--   `biz` (Business Logic): Chứa toàn bộ logic nghiệp vụ của ứng dụng.
--   `storage`: Chịu trách nhiệm truy cập và thao tác với cơ sở dữ liệu (MongoDB).
--   `component`: Các thành phần cốt lõi, có thể tái sử dụng như kết nối database, provider cho token, hasher.
--   `model`: Định nghĩa các cấu trúc dữ liệu cho các lớp khác nhau.
 
 ## ⚙️ Luồng hoạt động chính
 

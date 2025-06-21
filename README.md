@@ -1,7 +1,5 @@
 # Hub Service API
 
-Một backend service được xây dựng bằng Go và Gin framework, cung cấp các RESTful API cho các hoạt động của một hub trung tâm, bao gồm quản lý người dùng, xác thực và các tính năng khác.
-
 ## ✨ Tính năng
 
 -   **Xác thực người dùng**: Đăng ký, Đăng nhập sử dụng JWT (JSON Web Tokens).
@@ -72,20 +70,20 @@ Khi đã có `access_token`, người dùng sẽ đính kèm nó vào header `Au
 sequenceDiagram
     participant Client
     participant Router
-    participant AuthMiddleware as Middleware
-    participant ProtectedHandler as Handler
+    participant AuthMiddleware
+    participant ProtectedHandler
 
     Client->>+Router: GET /api/users (Header: Authorization: Bearer <token>)
-    Router->>+Middleware: Run AuthMiddleware
-    Middleware->>Middleware: Validate JWT Token
+    Router->>+AuthMiddleware: Run AuthMiddleware
+    AuthMiddleware->>AuthMiddleware: Validate JWT Token
 
     alt Token hợp lệ
-        Middleware->>+Handler: c.Next()
-        Handler-->>-Middleware: Process request & return
+        AuthMiddleware->>+ProtectedHandler: c.Next()
+        ProtectedHandler-->>-AuthMiddleware: Process request & return
     else Token không hợp lệ
-        Middleware-->>-Router: Abort with 401
+        AuthMiddleware-->>Router: Abort with 401
     end
 
-    Middleware-->>-Router: Pass control back
+    AuthMiddleware-->>-Router: Pass control back
     Router-->>-Client: Final Response
 ```

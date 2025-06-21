@@ -6,26 +6,24 @@ import (
 	"hub-service/component/appctx"
 	"hub-service/component/hasher"
 	"hub-service/component/tokenprovider"
+	"hub-service/component/tokenprovider/jwt"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserBiz struct {
-	appCtx    appctx.AppContext
-	store     *storage.UserStorage
-	hasher    hasher.Hasher
-	tokenProv tokenprovider.Provider
+	store         *storage.UserStorage
+	hasher        hasher.Hasher
+	tokenProvider tokenprovider.Provider
 }
 
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
 	return &UserBiz{
-		appCtx:    appCtx,
-		store:     storage.NewUserStorage(appCtx),
-		hasher:    hasher.NewMd5Hash(),
-		tokenProv: tokenprovider.NewJWTProvider(appCtx.SecretKey()),
+		store:         storage.NewUserStorage(appCtx),
+		hasher:        hasher.NewMd5Hash(),
+		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
 	}
 }
 
@@ -68,38 +66,29 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 }
 
 func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.LoginResponse, error) {
-	// Get user by email
 	user, err := biz.store.GetByEmail(ctx, email)
 	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, errors.New("user not found")
+		return nil, errors.New("invalid credentials")
 	}
 
-	// Verify password
-	hashedPassword := biz.hasher.Hash(password)
-	if hashedPassword != user.Password {
-		return nil, errors.New("invalid password")
+	if err := biz.hasher.CheckPassword(user.Password, password); err != nil {
+		return nil, errors.New("invalid credentials")
 	}
 
-	// Generate access token
-	userId, _ := strconv.Atoi(user.ID.Hex()[:8]) // Convert ObjectID to int for compatibility
-	payload := tokenprovider.AccessTokenPayload{
-		UserId:    userId,
-		Role:      user.Role, // Use role from DB
-		Email:     user.Email,
-		FirstName: user.Name,
-		LastName:  "",
+	payload := tokenprovider.TokenPayload{
+		UserID: user.ID,
+		Role:   user.Role,
 	}
 
-	token, err := biz.tokenProv.Generate(payload, 24*60*60) // 24 hours
+	// Access token expires in 1 day
+	token, err := biz.tokenProvider.Generate(payload, 60*60*24)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to generate token")
 	}
 
-	return &model.LoginResponse{
-		AccessToken: token.AccessToken,
+	loginResponse := &model.LoginResponse{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
 		User: model.UserResponse{
 			ID:        user.ID,
 			Email:     user.Email,
@@ -109,7 +98,51 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		},
-	}, nil
+	}
+
+	return loginResponse, nil
+}
+
+func (biz *UserBiz) RefreshToken(ctx context.Context, refreshToken string) (*model.LoginResponse, error) {
+	payload, err := biz.tokenProvider.Validate(refreshToken)
+	if err != nil {
+		return nil, tokenprovider.ErrInvalidToken
+	}
+
+	user, err := biz.store.GetByID(ctx, payload.UserID)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	newPayload := tokenprovider.TokenPayload{
+		UserID: user.ID,
+		Role:   user.Role,
+	}
+
+	// Generate a new pair of tokens, new access token expires in 1 day
+	token, err := biz.tokenProvider.Generate(newPayload, 60*60*24)
+	if err != nil {
+		return nil, errors.New("failed to generate token")
+	}
+
+	loginResponse := &model.LoginResponse{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken, // Return the new refresh token as well
+		User: model.UserResponse{
+			ID:        user.ID,
+			Email:     user.Email,
+			Name:      user.Name,
+			Avatar:    user.Avatar,
+			Role:      user.Role,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+	}
+
+	return loginResponse, nil
 }
 
 func (biz *UserBiz) GetUserByID(ctx context.Context, id primitive.ObjectID) (*model.UserResponse, error) {

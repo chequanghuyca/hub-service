@@ -4,11 +4,16 @@ import (
 	"errors"
 	"hub-service/common"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Provider defines the interface for token generation and validation.
 type Provider interface {
-	Generate(data AccessTokenPayload, expiry int) (*Token, error)
-	Validate(token string) (*AccessTokenPayload, error)
+	// Generate generates a new token pair (access and refresh).
+	Generate(data TokenPayload, expiry int) (*Token, error)
+	// Validate validates a token string and returns its payload.
+	Validate(token string) (*TokenPayload, error)
 }
 
 var (
@@ -31,22 +36,16 @@ var (
 	)
 )
 
+// Token represents a pair of access and refresh tokens.
 type Token struct {
-	AccessToken string    `json:"access_token"`
-	FreshToken  string    `json:"fresh_token"`
-	CreatedAt   time.Time `json:"created"`
-	Expiry      int       `json:"expiry"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	CreatedAt    time.Time `json:"created_at"`
+	Expiry       int       `json:"expiry"`
 }
 
-type AccessTokenPayload struct {
-	UserId    int    `json:"user_id"`
-	Role      string `json:"role"`
-	Email     string `json:"email"`
-	LastName  string `json:"last_name"`
-	FirstName string `json:"first_name"`
-}
-
-type FreshTokenPayload struct {
-	UserId int    `json:"user_id"`
-	Email  string `json:"email"`
+// TokenPayload contains the data stored in a token.
+type TokenPayload struct {
+	UserID primitive.ObjectID `json:"user_id"`
+	Role   string             `json:"role"`
 }

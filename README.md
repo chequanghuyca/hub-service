@@ -87,3 +87,41 @@ sequenceDiagram
     AuthMiddleware-->>-Router: Pass control back
     Router-->>-Client: Final Response
 ```
+
+### 3. Luồng Làm Mới Token (Refresh Token)
+
+Để cải thiện trải nghiệm người dùng, thay vì bắt họ đăng nhập lại mỗi khi `access_token` (ngắn hạn) hết hạn, hệ thống sử dụng một `refresh_token` (dài hạn) để lấy một cặp token mới.
+
+-   **Access Token**: Thời gian sống ngắn (ví dụ: 15 phút), dùng để truy cập tài nguyên.
+-   **Refresh Token**: Thời gian sống dài (ví dụ: 30 ngày), chỉ dùng để lấy `access_token` mới.
+
+Dưới đây là sơ đồ mô tả luồng hoạt động khi `access_token` hết hạn:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    %% 1. Access Token Expires
+    Note over Client,Server: Access Token đã hết hạn
+
+    Client->>Server: GET /api/users (Header: Bearer access_token hết hạn)
+    Server->>Server: Xác thực Access Token -> Thất bại (Hết hạn)
+    Server-->>Client: 401 Unauthorized Error
+
+    %% 2. Refresh Token Flow
+    Client->>Server: POST /api/users/refresh (Body: { refresh_token })
+    Server->>Server: Xác thực Refresh Token
+    alt Refresh Token Hợp lệ
+        Server->>Server: Tạo Access Token MỚI & Refresh Token MỚI
+        Server-->>Client: { new_access_token, new_refresh_token }
+        Client->>Client: Cập nhật, lưu trữ 2 token MỚI
+    else Refresh Token Không Hợp lệ
+        Server-->>Client: 401 Unauthorized Error (Yêu cầu đăng nhập lại)
+    end
+
+    %% 3. Retry Original Request
+    Client->>Server: GET /api/users (Header: Bearer new_access_token)
+    Server->>Server: Xác thực Access Token mới -> Thành công
+    Server-->>Client: Dữ liệu người dùng
+```

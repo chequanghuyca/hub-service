@@ -106,6 +106,8 @@ definitions:
     properties:
       access_token:
         type: string
+      refresh_token:
+        type: string
       user:
         $ref: '#/definitions/model.UserResponse'
     type: object
@@ -123,6 +125,13 @@ definitions:
         type: integer
       total_pages:
         type: integer
+    type: object
+  model.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
     type: object
   model.UpdateUserResponse:
     properties:
@@ -467,6 +476,37 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: User login
+      tags:
+      - users
+  /api/users/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get a new access token and refresh token pair using a valid refresh
+        token.
+      parameters:
+      - description: Refresh Token
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/model.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.LoginAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Refresh access token
       tags:
       - users
 securityDefinitions:

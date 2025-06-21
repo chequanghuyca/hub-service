@@ -1,28 +1,40 @@
 package appctx
 
-import "hub-service/component/database"
+import (
+	"hub-service/component/database"
+	"hub-service/component/tokenprovider"
+	"hub-service/component/tokenprovider/jwt"
+)
 
 type AppContext interface {
-	SecretKey() string
+	GetSecretKey() string
 	GetDatabase() *database.Database
+	GetTokenProvider() tokenprovider.Provider
 }
 
-type appCtx struct {
-	secretKey string
-	database  *database.Database
+type appContext struct {
+	secretKey     string
+	db            *database.Database
+	tokenProvider tokenprovider.Provider
 }
 
-func NewAppContext(secretKey string, database *database.Database) AppContext {
-	return &appCtx{
-		secretKey: secretKey,
-		database:  database,
+func NewAppContext(secretKey string, db *database.Database) *appContext {
+	tokenProvider := jwt.NewProvider(secretKey)
+	return &appContext{
+		secretKey:     secretKey,
+		db:            db,
+		tokenProvider: tokenProvider,
 	}
 }
 
-func (context *appCtx) SecretKey() string {
-	return context.secretKey
+func (ctx *appContext) GetSecretKey() string {
+	return ctx.secretKey
 }
 
-func (context *appCtx) GetDatabase() *database.Database {
-	return context.database
+func (ctx *appContext) GetDatabase() *database.Database {
+	return ctx.db
+}
+
+func (ctx *appContext) GetTokenProvider() tokenprovider.Provider {
+	return ctx.tokenProvider
 }

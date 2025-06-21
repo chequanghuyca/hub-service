@@ -11,11 +11,10 @@ import (
 func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
-		// Public routes
 		users.POST("/", CreateUser(appCtx))
 		users.POST("/login", Login(appCtx))
+		users.POST("/refresh", RefreshToken(appCtx))
 
-		// Protected routes (require authentication)
 		protected := users.Group("/")
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{

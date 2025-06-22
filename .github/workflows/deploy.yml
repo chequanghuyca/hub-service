@@ -29,5 +29,9 @@ jobs:
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         steps:
-            - name: Trigger Render Production Deploy
-              run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}
+            - name: Trigger and Wait for Render Production Deploy
+              uses: JorgeLN/render-deploy-action@v1.4.0
+              with:
+                  deploy_hook_url: ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}
+                  api_key: ${{ secrets.SYSTEM_RENDER_API_KEY }}
+                  wait_deploy: true

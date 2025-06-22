@@ -124,6 +124,25 @@ definitions:
     - target_lang
     - title
     type: object
+  model.ChallengeScore:
+    properties:
+      attempt_count:
+        type: integer
+      best_score:
+        type: number
+      challenge_id:
+        type: string
+      challenge_title:
+        type: string
+      deepl_translation:
+        type: string
+      last_attempt_at:
+        type: string
+      original_content:
+        type: string
+      user_translation:
+        type: string
+    type: object
   model.ChallengeUpdate:
     description: Fields available for updating a translation challenge. All fields
       are optional.
@@ -160,12 +179,48 @@ definitions:
       error:
         type: string
     type: object
+  model.GetTotalScoreAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.GetTotalScoreResponse'
+      status:
+        type: string
+    type: object
+  model.GetTotalScoreResponse:
+    properties:
+      average_score:
+        type: number
+      best_score:
+        type: number
+      total_challenges:
+        type: integer
+      total_score:
+        type: number
+      user_id:
+        type: string
+    type: object
   model.GetUserResponse:
     properties:
       data:
         $ref: '#/definitions/model.UserResponse'
       status:
         type: string
+    type: object
+  model.GetUserScoresAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.GetUserScoresResponse'
+      status:
+        type: string
+    type: object
+  model.GetUserScoresResponse:
+    properties:
+      scores:
+        items:
+          $ref: '#/definitions/model.ChallengeScore'
+        type: array
+      summary:
+        $ref: '#/definitions/model.UserScoreSummary'
     type: object
   model.ListUsersResponse:
     properties:
@@ -243,24 +298,21 @@ definitions:
     - challenge_id
     - user_translation
     type: object
-  model.ScoreResponse:
-    description: Response containing the scoring result and comparison data
+  model.SubmitScoreResponse:
     properties:
+      attempt_count:
+        type: integer
+      best_score:
+        type: number
       deepl_translation:
-        description: DeepL's reference translation
-        example: I see yellow flowers on green grass.
         type: string
-      original_sentence:
-        description: Original sentence in Vietnamese
-        example: Tôi thấy hoa vàng trên cỏ xanh.
+      is_new_best:
+        type: boolean
+      original_content:
         type: string
       score:
-        description: Similarity score (0-100)
-        example: 95.23
         type: number
       user_translation:
-        description: User's submitted translation
-        example: I see yellow flowers on the green grass.
         type: string
     type: object
   model.UpdateUserResponse:
@@ -307,6 +359,19 @@ definitions:
       role:
         type: string
       updated_at:
+        type: string
+    type: object
+  model.UserScoreSummary:
+    properties:
+      average_score:
+        type: number
+      best_score:
+        type: number
+      total_challenges:
+        type: integer
+      total_score:
+        type: number
+      user_id:
         type: string
     type: object
   model.UserUpdate:
@@ -626,12 +691,82 @@ paths:
       summary: Send a single email
       tags:
       - email
+  /api/scores/total/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get total score, average score, and best score for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetTotalScoreAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user's total score
+      tags:
+      - scores
+  /api/scores/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed scores and summary for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetUserScoresAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user's scores for all challenges
+      tags:
+      - scores
   /api/translate/score:
     post:
       consumes:
       - application/json
-      description: Score user's translation by comparing it with DeepL translation
-        using Sørensen-Dice similarity
+      description: Submits a user's translation, gets a score from DeepL, and saves
+        the result.
       parameters:
       - description: Translation scoring request
         in: body
@@ -649,7 +784,7 @@ paths:
             - $ref: '#/definitions/common.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/model.ScoreResponse'
+                  $ref: '#/definitions/model.SubmitScoreResponse'
               type: object
         "400":
           description: Bad request - invalid input
@@ -664,12 +799,12 @@ paths:
           schema:
             $ref: '#/definitions/common.AppError'
         "500":
-          description: Internal server error - DeepL API error or scoring error
+          description: Internal server error
           schema:
             $ref: '#/definitions/common.AppError'
       security:
       - BearerAuth: []
-      summary: Score user translation
+      summary: Score and save user translation for a challenge
       tags:
       - translate
   /api/users:

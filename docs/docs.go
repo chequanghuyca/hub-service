@@ -500,6 +500,116 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/scores/total/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get total score, average score, and best score for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scores"
+                ],
+                "summary": "Get user's total score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GetTotalScoreAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/scores/user/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get detailed scores and summary for a specific user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scores"
+                ],
+                "summary": "Get user's scores for all challenges",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GetUserScoresAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/translate/score": {
             "post": {
                 "security": [
@@ -507,7 +617,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Score user's translation by comparing it with DeepL translation using Sørensen-Dice similarity",
+                "description": "Submits a user's translation, gets a score from DeepL, and saves the result.",
                 "consumes": [
                     "application/json"
                 ],
@@ -517,7 +627,7 @@ const docTemplate = `{
                 "tags": [
                     "translate"
                 ],
-                "summary": "Score user translation",
+                "summary": "Score and save user translation for a challenge",
                 "parameters": [
                     {
                         "description": "Translation scoring request",
@@ -541,7 +651,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.ScoreResponse"
+                                            "$ref": "#/definitions/model.SubmitScoreResponse"
                                         }
                                     }
                                 }
@@ -567,7 +677,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error - DeepL API error or scoring error",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/common.AppError"
                         }
@@ -1138,6 +1248,35 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ChallengeScore": {
+            "type": "object",
+            "properties": {
+                "attempt_count": {
+                    "type": "integer"
+                },
+                "best_score": {
+                    "type": "number"
+                },
+                "challenge_id": {
+                    "type": "string"
+                },
+                "challenge_title": {
+                    "type": "string"
+                },
+                "deepl_translation": {
+                    "type": "string"
+                },
+                "last_attempt_at": {
+                    "type": "string"
+                },
+                "original_content": {
+                    "type": "string"
+                },
+                "user_translation": {
+                    "type": "string"
+                }
+            }
+        },
         "model.ChallengeUpdate": {
             "description": "Fields available for updating a translation challenge. All fields are optional.",
             "type": "object",
@@ -1190,6 +1329,37 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GetTotalScoreAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.GetTotalScoreResponse"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GetTotalScoreResponse": {
+            "type": "object",
+            "properties": {
+                "average_score": {
+                    "type": "number"
+                },
+                "best_score": {
+                    "type": "number"
+                },
+                "total_challenges": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "model.GetUserResponse": {
             "type": "object",
             "properties": {
@@ -1198,6 +1368,31 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GetUserScoresAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.GetUserScoresResponse"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GetUserScoresResponse": {
+            "type": "object",
+            "properties": {
+                "scores": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ChallengeScore"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/model.UserScoreSummary"
                 }
             }
         },
@@ -1315,29 +1510,29 @@ const docTemplate = `{
                 }
             }
         },
-        "model.ScoreResponse": {
-            "description": "Response containing the scoring result and comparison data",
+        "model.SubmitScoreResponse": {
             "type": "object",
             "properties": {
-                "deepl_translation": {
-                    "description": "DeepL's reference translation",
-                    "type": "string",
-                    "example": "I see yellow flowers on green grass."
+                "attempt_count": {
+                    "type": "integer"
                 },
-                "original_sentence": {
-                    "description": "Original sentence in Vietnamese",
-                    "type": "string",
-                    "example": "Tôi thấy hoa vàng trên cỏ xanh."
+                "best_score": {
+                    "type": "number"
+                },
+                "deepl_translation": {
+                    "type": "string"
+                },
+                "is_new_best": {
+                    "type": "boolean"
+                },
+                "original_content": {
+                    "type": "string"
                 },
                 "score": {
-                    "description": "Similarity score (0-100)",
-                    "type": "number",
-                    "example": 95.23
+                    "type": "number"
                 },
                 "user_translation": {
-                    "description": "User's submitted translation",
-                    "type": "string",
-                    "example": "I see yellow flowers on the green grass."
+                    "type": "string"
                 }
             }
         },
@@ -1405,6 +1600,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UserScoreSummary": {
+            "type": "object",
+            "properties": {
+                "average_score": {
+                    "type": "number"
+                },
+                "best_score": {
+                    "type": "number"
+                },
+                "total_challenges": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "number"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }

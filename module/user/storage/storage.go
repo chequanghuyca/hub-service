@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 )
 
 type UserStorage struct {

@@ -3,26 +3,26 @@ package biz
 import (
 	"context"
 	"errors"
-	"hub-service/component/appctx"
-	"hub-service/component/hasher"
-	"hub-service/component/tokenprovider"
-	"hub-service/component/tokenprovider/jwt"
+	"hub-service/core/appctx"
+	"hub-service/core/auth/tokenprovider"
+	"hub-service/core/auth/tokenprovider/jwt"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
+	hash "hub-service/utils/hash"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserBiz struct {
 	store         *storage.UserStorage
-	hasher        hasher.Hasher
+	hasher        hash.Hasher
 	tokenProvider tokenprovider.Provider
 }
 
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
 	return &UserBiz{
 		store:         storage.NewUserStorage(appCtx),
-		hasher:        hasher.NewMd5Hash(),
+		hasher:        hash.NewMd5Hash(),
 		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
 	}
 }

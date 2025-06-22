@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	challengeTransport "hub-service/module/challenge/transport"
 	ginemail "hub-service/module/email/transport"
 	translateTransport "hub-service/module/translate/transport"

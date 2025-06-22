@@ -3,7 +3,7 @@ package ginemail
 import (
 	"net/http"
 
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	emailmodel "hub-service/module/email/model"
 	storagemail "hub-service/module/email/storage"
 

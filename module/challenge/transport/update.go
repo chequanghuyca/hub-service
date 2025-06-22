@@ -2,7 +2,7 @@ package transport
 
 import (
 	"hub-service/common"
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	"hub-service/module/challenge/biz"
 	"hub-service/module/challenge/model"
 	"hub-service/module/challenge/storage"
@@ -14,14 +14,17 @@ import (
 
 // UpdateChallenge godoc
 // @Summary Update a challenge
-// @Description Update the details of an existing translation challenge by its ID.
+// @Description Update the details of an existing translation challenge by its ID. Only admin and super_admin can access this endpoint.
 // @Tags challenges
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path string true "Challenge ID (MongoDB ObjectID)"
 // @Param challenge body model.ChallengeUpdate true "Challenge data to update"
 // @Success 200 {object} common.Response{data=boolean} "Success"
 // @Failure 400 {object} common.AppError "Bad request or invalid ID format"
+// @Failure 401 {object} common.AppError "Unauthorized"
+// @Failure 403 {object} common.AppError "Forbidden - Only admin and super_admin can access"
 // @Failure 404 {object} common.AppError "Challenge not found"
 // @Failure 500 {object} common.AppError "Internal server error"
 // @Router /api/challenges/{id} [patch]

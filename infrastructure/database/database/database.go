@@ -1,7 +1,7 @@
 package database
 
 import (
-	"hub-service/component/mongodb"
+	"hub-service/infrastructure/database/mongodb"
 	"log"
 	"os"
 )

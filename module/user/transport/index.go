@@ -2,8 +2,8 @@ package transport
 
 import (
 	"hub-service/common"
-	"hub-service/component/appctx"
-	"hub-service/component/auth"
+	"hub-service/core/appctx"
+	"hub-service/middleware/auth"
 
 	"github.com/gin-gonic/gin"
 )

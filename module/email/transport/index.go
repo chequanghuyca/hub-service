@@ -1,7 +1,7 @@
 package ginemail
 
 import (
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	"hub-service/module/user/biz"
 	"hub-service/module/user/model"
 	"net/http"

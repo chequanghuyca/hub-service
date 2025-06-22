@@ -1,10 +1,10 @@
 package appctx
 
 import (
-	"hub-service/component/database"
-	"hub-service/component/deepl"
-	"hub-service/component/tokenprovider"
-	"hub-service/component/tokenprovider/jwt"
+	"hub-service/core/auth/tokenprovider"
+	"hub-service/core/auth/tokenprovider/jwt"
+	"hub-service/infrastructure/database/database"
+	"hub-service/infrastructure/external/deepl"
 
 	deeplgo "github.com/bounoable/deepl"
 )

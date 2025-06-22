@@ -46,6 +46,9 @@ type Token struct {
 
 // TokenPayload contains the data stored in a token.
 type TokenPayload struct {
-	UserID primitive.ObjectID `json:"user_id"`
-	Role   string             `json:"role"`
+	UserID    primitive.ObjectID `json:"user_id"`
+	Role      string             `json:"role"`
+	Email     string             `json:"email,omitempty"`
+	FirstName string             `json:"first_name,omitempty"`
+	LastName  string             `json:"last_name,omitempty"`
 }

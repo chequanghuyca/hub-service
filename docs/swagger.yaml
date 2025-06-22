@@ -326,7 +326,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a list of translation challenges with pagination.
+      description: Get a list of translation challenges with pagination. All authenticated
+        users can access this endpoint.
       parameters:
       - default: 1
         description: Page number
@@ -358,10 +359,16 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: List challenges
       tags:
       - challenges
@@ -369,6 +376,7 @@ paths:
       consumes:
       - application/json
       description: Create a new translation challenge and store it in the database.
+        Only admin and super_admin can access this endpoint.
       parameters:
       - description: Challenge data to create
         in: body
@@ -392,10 +400,20 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: Create a new challenge
       tags:
       - challenges
@@ -403,7 +421,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete a translation challenge by its unique ID.
+      description: Delete a translation challenge by its unique ID. Only admin and
+        super_admin can access this endpoint.
       parameters:
       - description: Challenge ID (MongoDB ObjectID)
         in: path
@@ -426,6 +445,14 @@ paths:
           description: Invalid ID format
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
         "404":
           description: Challenge not found
           schema:
@@ -434,6 +461,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: Delete a challenge
       tags:
       - challenges
@@ -441,7 +470,7 @@ paths:
       consumes:
       - application/json
       description: Retrieve the details of a specific translation challenge by its
-        unique ID.
+        unique ID. All authenticated users can access this endpoint.
       parameters:
       - description: Challenge ID (MongoDB ObjectID)
         in: path
@@ -464,10 +493,16 @@ paths:
           description: Invalid ID format
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
         "404":
           description: Challenge not found
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: Get a challenge by ID
       tags:
       - challenges
@@ -475,7 +510,7 @@ paths:
       consumes:
       - application/json
       description: Update the details of an existing translation challenge by its
-        ID.
+        ID. Only admin and super_admin can access this endpoint.
       parameters:
       - description: Challenge ID (MongoDB ObjectID)
         in: path
@@ -504,6 +539,14 @@ paths:
           description: Bad request or invalid ID format
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
         "404":
           description: Challenge not found
           schema:
@@ -512,6 +555,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: Update a challenge
       tags:
       - challenges
@@ -610,6 +655,10 @@ paths:
           description: Bad request - invalid input
           schema:
             $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
         "404":
           description: Challenge not found
           schema:
@@ -618,6 +667,8 @@ paths:
           description: Internal server error - DeepL API error or scoring error
           schema:
             $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
       summary: Score user translation
       tags:
       - translate

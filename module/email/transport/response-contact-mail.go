@@ -2,10 +2,10 @@ package ginemail
 
 import (
 	"hub-service/common"
-	"hub-service/component/appctx"
-	"hub-service/helper"
+	"hub-service/core/appctx"
 	emailmodel "hub-service/module/email/model"
 	storageemail "hub-service/module/email/storage"
+	"hub-service/module/email/template"
 	"net/http"
 	"os"
 
@@ -31,7 +31,7 @@ func ResponseEmailPortfolio(appCtx appctx.AppContext) gin.HandlerFunc {
 			panic(common.ErrInvalidRequest(err))
 		}
 
-		dataSendContact := helper.MailResponseData{
+		dataSendContact := template.MailResponseData{
 			Name:    req.Name,
 			MyPhone: os.Getenv("SYSTEM_PHONE_NUMBER"),
 			MyEmail: os.Getenv("SYSTEM_EMAIL"),
@@ -39,8 +39,8 @@ func ResponseEmailPortfolio(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		err := storageemail.SingleSendEmail(
 			req.Email,
-			helper.GetSubjectMailResponse(),
-			helper.GetBodyMailResponse(dataSendContact),
+			template.GetSubjectMailResponse(),
+			template.GetBodyMailResponse(dataSendContact),
 		)
 
 		if err != nil {

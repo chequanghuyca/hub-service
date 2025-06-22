@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	challengemodel "hub-service/module/challenge/model"
 	"hub-service/module/translate/model"
 	"log"

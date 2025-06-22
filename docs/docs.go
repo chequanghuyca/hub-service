@@ -17,7 +17,12 @@ const docTemplate = `{
     "paths": {
         "/api/challenges": {
             "get": {
-                "description": "Get a list of translation challenges with pagination.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a list of translation challenges with pagination. All authenticated users can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -75,6 +80,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/common.AppError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -84,7 +95,12 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new translation challenge and store it in the database.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new translation challenge and store it in the database. Only admin and super_admin can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -131,6 +147,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/common.AppError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only admin and super_admin can access",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -142,7 +170,12 @@ const docTemplate = `{
         },
         "/api/challenges/{id}": {
             "get": {
-                "description": "Retrieve the details of a specific translation challenge by its unique ID.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the details of a specific translation challenge by its unique ID. All authenticated users can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -187,6 +220,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/common.AppError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
                     "404": {
                         "description": "Challenge not found",
                         "schema": {
@@ -196,7 +235,12 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a translation challenge by its unique ID.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a translation challenge by its unique ID. Only admin and super_admin can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -241,6 +285,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/common.AppError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only admin and super_admin can access",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
                     "404": {
                         "description": "Challenge not found",
                         "schema": {
@@ -256,7 +312,12 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update the details of an existing translation challenge by its ID.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the details of an existing translation challenge by its ID. Only admin and super_admin can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -306,6 +367,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request or invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only admin and super_admin can access",
                         "schema": {
                             "$ref": "#/definitions/common.AppError"
                         }
@@ -429,6 +502,11 @@ const docTemplate = `{
         },
         "/api/translate/score": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Score user's translation by comparing it with DeepL translation using Sørensen-Dice similarity",
                 "consumes": [
                     "application/json"
@@ -472,6 +550,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/common.AppError"
                         }

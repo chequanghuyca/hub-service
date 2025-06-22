@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

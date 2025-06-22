@@ -2,7 +2,7 @@ package transport
 
 import (
 	"hub-service/common"
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	challengestorage "hub-service/module/challenge/storage"
 	"hub-service/module/translate/biz"
 	"hub-service/module/translate/model"
@@ -17,9 +17,11 @@ import (
 // @Tags translate
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param request body model.ScoreRequest true "Translation scoring request"
 // @Success 200 {object} common.Response{data=model.ScoreResponse} "Success"
 // @Failure 400 {object} common.AppError "Bad request - invalid input"
+// @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 404 {object} common.AppError "Challenge not found"
 // @Failure 500 {object} common.AppError "Internal server error - DeepL API error or scoring error"
 // @Router /api/translate/score [post]

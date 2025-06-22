@@ -1,8 +1,8 @@
 package main
 
 import (
-	"hub-service/component/appctx"
-	"hub-service/component/database"
+	"hub-service/core/appctx"
+	"hub-service/infrastructure/database/database"
 	"hub-service/middleware"
 	"log"
 	"os"

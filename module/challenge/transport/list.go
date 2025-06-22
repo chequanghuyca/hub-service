@@ -2,7 +2,7 @@ package transport
 
 import (
 	"hub-service/common"
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	"hub-service/module/challenge/biz"
 	_ "hub-service/module/challenge/model"
 	"hub-service/module/challenge/storage"
@@ -13,14 +13,16 @@ import (
 
 // ListChallenge godoc
 // @Summary List challenges
-// @Description Get a list of translation challenges with pagination.
+// @Description Get a list of translation challenges with pagination. All authenticated users can access this endpoint.
 // @Tags challenges
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
 // @Success 200 {object} common.Response{data=[]model.Challenge,meta=common.Paging} "Success"
 // @Failure 400 {object} common.AppError "Bad request"
+// @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 500 {object} common.AppError "Internal server error"
 // @Router /api/challenges [get]
 func ListChallenge(appCtx appctx.AppContext) gin.HandlerFunc {

@@ -1,10 +1,11 @@
 package jwt
 
 import (
-	"hub-service/component/tokenprovider"
+	"hub-service/core/auth/tokenprovider"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // NewProvider creates a new token provider that implements the Provider interface.
@@ -24,7 +25,13 @@ func NewJWTProvider(secret string) *jwtProvider {
 
 // customClaims represents the JWT claims.
 type customClaims struct {
-	Payload tokenprovider.TokenPayload `json:"payload"`
+	Payload struct {
+		UserID    interface{} `json:"user_id"`
+		Role      string      `json:"role"`
+		Email     string      `json:"email,omitempty"`
+		FirstName string      `json:"first_name,omitempty"`
+		LastName  string      `json:"last_name,omitempty"`
+	} `json:"payload"`
 	jwt.StandardClaims
 }
 
@@ -32,7 +39,19 @@ type customClaims struct {
 func (p *jwtProvider) Generate(data tokenprovider.TokenPayload, expiry int) (*tokenprovider.Token, error) {
 	// Access Token
 	accessTokenClaims := &customClaims{
-		Payload: data,
+		Payload: struct {
+			UserID    interface{} `json:"user_id"`
+			Role      string      `json:"role"`
+			Email     string      `json:"email,omitempty"`
+			FirstName string      `json:"first_name,omitempty"`
+			LastName  string      `json:"last_name,omitempty"`
+		}{
+			UserID:    data.UserID,
+			Role:      data.Role,
+			Email:     data.Email,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+		},
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -46,7 +65,19 @@ func (p *jwtProvider) Generate(data tokenprovider.TokenPayload, expiry int) (*to
 
 	// Refresh Token (longer expiry, can have simpler payload if needed)
 	refreshTokenClaims := &customClaims{
-		Payload: data, // Using the same payload for simplicity
+		Payload: struct {
+			UserID    interface{} `json:"user_id"`
+			Role      string      `json:"role"`
+			Email     string      `json:"email,omitempty"`
+			FirstName string      `json:"first_name,omitempty"`
+			LastName  string      `json:"last_name,omitempty"`
+		}{
+			UserID:    data.UserID,
+			Role:      data.Role,
+			Email:     data.Email,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+		},
 		StandardClaims: jwt.StandardClaims{
 			// Refresh token expires in 2 days
 			ExpiresAt: time.Now().Add(time.Hour * 24 * 2).Unix(),
@@ -86,7 +117,32 @@ func (p *jwtProvider) Validate(tokenStr string) (*tokenprovider.TokenPayload, er
 	}
 
 	if claims, ok := token.Claims.(*customClaims); ok && token.Valid {
-		return &claims.Payload, nil
+		// Convert the flexible UserID back to primitive.ObjectID
+		var userID primitive.ObjectID
+		switch v := claims.Payload.UserID.(type) {
+		case float64:
+			// Handle numeric user_id (like 0)
+			userID = primitive.NilObjectID
+		case string:
+			// Handle string user_id
+			if objID, err := primitive.ObjectIDFromHex(v); err == nil {
+				userID = objID
+			} else {
+				userID = primitive.NilObjectID
+			}
+		case primitive.ObjectID:
+			userID = v
+		default:
+			userID = primitive.NilObjectID
+		}
+
+		return &tokenprovider.TokenPayload{
+			UserID:    userID,
+			Role:      claims.Payload.Role,
+			Email:     claims.Payload.Email,
+			FirstName: claims.Payload.FirstName,
+			LastName:  claims.Payload.LastName,
+		}, nil
 	}
 
 	return nil, tokenprovider.ErrInvalidToken

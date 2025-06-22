@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	"net/http"
 	"strings"
 

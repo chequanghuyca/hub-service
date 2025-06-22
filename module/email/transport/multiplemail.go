@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"hub-service/component/appctx"
+	"hub-service/core/appctx"
 	emailmodel "hub-service/module/email/model"
 	storagemail "hub-service/module/email/storage"
 )

@@ -1,6 +1,6 @@
 package storage
 
-import "hub-service/component/database"
+import "hub-service/infrastructure/database/database"
 
 type Storage struct {
 	db *database.Database

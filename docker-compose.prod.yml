@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+    # MongoDB Database
+    mongodb:
+        image: mongo:7.0
+        container_name: hub-service-mongodb-prod
+        restart: unless-stopped
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+            MONGO_INITDB_DATABASE: hub_service
+        ports:
+            - '127.0.0.1:27017:27017' # Only accessible from localhost
+        volumes:
+            - mongodb_data:/data/db
+            - ./mongo-init:/docker-entrypoint-initdb.d
+        networks:
+            - hub-network
+        healthcheck:
+            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
+                reservations:
+                    memory: 512M
+
+    # Hub Service Application
+    hub-service:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: hub-service-app-prod
+        restart: unless-stopped
+        ports:
+            - '127.0.0.1:8080:8080' # Only accessible from localhost
+        environment:
+            # App Configuration
+            SYSTEM_APP_NAME: ${SYSTEM_APP_NAME:-Hub Service}
+            SYSTEM_SECRET_KEY: ${SYSTEM_SECRET_KEY}
+            PORT: ${PORT:-8080}
+
+            # MongoDB Configuration
+            SYSTEM_MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/hub_service?authSource=admin
+
+            # Email Configuration
+            SYSTEM_EMAIL_SERVER: ${SYSTEM_EMAIL_SERVER}
+            SYSTEM_EMAIL: ${SYSTEM_EMAIL}
+            SYSTEM_EMAIL_HOST: ${SYSTEM_EMAIL_HOST}
+            SYSTEM_EMAIL_PORT: ${SYSTEM_EMAIL_PORT}
+            SYSTEM_PHONE_NUMBER: ${SYSTEM_PHONE_NUMBER}
+
+            # DeepL Configuration
+            SYSTEM_DEEPL_API_KEY: ${SYSTEM_DEEPL_API_KEY}
+            SYSTEM_DEEPL_BASE_URL: ${SYSTEM_DEEPL_BASE_URL}
+
+            # Portfolio URLs
+            BASE_URL_PORTFOLIO: ${BASE_URL_PORTFOLIO}
+            BASE_URL_LOCAL: ${BASE_URL_LOCAL}
+        depends_on:
+            mongodb:
+                condition: service_healthy
+        networks:
+            - hub-network
+        healthcheck:
+            test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8080/health']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+                    cpus: '0.5'
+                reservations:
+                    memory: 256M
+                    cpus: '0.25'
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '10m'
+                max-file: '3'
+
+    # Nginx Reverse Proxy (Optional)
+    nginx:
+        image: nginx:alpine
+        container_name: hub-service-nginx
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./nginx/ssl:/etc/nginx/ssl:ro
+        depends_on:
+            - hub-service
+        networks:
+            - hub-network
+
+volumes:
+    mongodb_data:
+        driver: local
+
+networks:
+    hub-network:
+        driver: bridge

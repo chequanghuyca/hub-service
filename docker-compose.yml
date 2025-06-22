@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+    # MongoDB Database
+    mongodb:
+        image: mongo:7.0
+        container_name: hub-service-mongodb
+        restart: unless-stopped
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: password123
+            MONGO_INITDB_DATABASE: hub_service
+        ports:
+            - '27017:27017'
+        volumes:
+            - mongodb_data:/data/db
+            - ./mongo-init:/docker-entrypoint-initdb.d
+        networks:
+            - hub-network
+        healthcheck:
+            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    # Hub Service Application
+    hub-service:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: hub-service-app
+        restart: unless-stopped
+        ports:
+            - '8080:8080'
+        environment:
+            # App Configuration
+            SYSTEM_APP_NAME: Hub Service
+            SYSTEM_SECRET_KEY: your-super-secret-key-here-change-this-in-production
+            PORT: 8080
+
+            # MongoDB Configuration
+            SYSTEM_MONGODB_URI: mongodb://admin:password123@mongodb:27017/hub_service?authSource=admin
+
+            # Email Configuration (update with your values)
+            SYSTEM_EMAIL_SERVER: smtp.gmail.com
+            SYSTEM_EMAIL: your-email@gmail.com
+            SYSTEM_EMAIL_HOST: smtp.gmail.com
+            SYSTEM_EMAIL_PORT: 587
+            SYSTEM_PHONE_NUMBER: +1234567890
+
+            # DeepL Configuration (update with your API key)
+            SYSTEM_DEEPL_API_KEY: your-deepl-api-key
+            SYSTEM_DEEPL_BASE_URL: https://api-free.deepl.com/v2
+
+            # Portfolio URLs
+            BASE_URL_PORTFOLIO: https://your-portfolio.com
+            BASE_URL_LOCAL: http://localhost:3000
+        depends_on:
+            mongodb:
+                condition: service_healthy
+        networks:
+            - hub-network
+        healthcheck:
+            test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8080/health']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+
+    # MongoDB Express (Optional - for database management)
+    mongo-express:
+        image: mongo-express:latest
+        container_name: hub-service-mongo-express
+        restart: unless-stopped
+        ports:
+            - '8081:8081'
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+            ME_CONFIG_MONGODB_ADMINPASSWORD: password123
+            ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
+            ME_CONFIG_BASICAUTH_USERNAME: admin
+            ME_CONFIG_BASICAUTH_PASSWORD: password123
+        depends_on:
+            mongodb:
+                condition: service_healthy
+        networks:
+            - hub-network
+
+volumes:
+    mongodb_data:
+        driver: local
+
+networks:
+    hub-network:
+        driver: bridge

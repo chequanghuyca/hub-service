@@ -7,16 +7,16 @@ on:
             - 'feature/**'
 
 jobs:
-    test-and-build:
+    build:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v2
 
             - name: Set up Go
-              uses: actions/setup-go@v5
+              uses: actions/setup-go@v2
               with:
-                  go-version: '1.22' # Thay phiên bản Go của bạn ở đây
+                  go-version: '1.23.1'
 
             - name: Build
               run: go build -v ./...
@@ -25,13 +25,21 @@ jobs:
               run: go test -v ./...
 
     deploy-production:
-        needs: test-and-build
+        needs: build
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/main'
         steps:
-            - name: Trigger and Wait for Render Production Deploy
-              uses: JorgeLN/render-deploy-action@v1.4.0
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up Go
+              uses: actions/setup-go@v2
               with:
-                  deploy_hook_url: ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}
-                  api_key: ${{ secrets.SYSTEM_RENDER_API_KEY }}
-                  wait_deploy: true
+                  go-version: '1.23.1'
+
+            - name: Deploy to Render
+              run: |
+                  chmod +x ./deploy.sh
+                  ./deploy.sh ${{ secrets.SYSTEM_RENDER_API_KEY }}
+              env:
+                  SYSTEM_RENDER_API_KEY: ${{ secrets.SYSTEM_RENDER_API_KEY }}

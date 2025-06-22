@@ -2,6 +2,7 @@ package main
 
 import (
 	"hub-service/core/appctx"
+	"hub-service/docs"
 	"hub-service/infrastructure/database/database"
 	"hub-service/middleware"
 	"log"
@@ -53,7 +54,8 @@ func main() {
 	middleware.ApiServices(appContext, r)
 
 	// Swagger documentation
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	docs.SwaggerInfo.BasePath = "/api"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.PersistAuthorization(true)))
 
 	r.Run()
 }

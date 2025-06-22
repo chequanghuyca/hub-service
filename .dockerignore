@@ -42,7 +42,4 @@ tmp/
 temp/
 
 # Node modules (if any)
-node_modules/
-
-# Go cache
-go.sum 
+node_modules/ 

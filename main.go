@@ -8,8 +8,6 @@ import (
 	"log"
 	"os"
 
-	_ "hub-service/docs"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -54,7 +52,7 @@ func main() {
 	middleware.ApiServices(appContext, r)
 
 	// Swagger documentation
-	docs.SwaggerInfo.BasePath = "/api"
+	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.PersistAuthorization(true)))
 
 	r.Run()

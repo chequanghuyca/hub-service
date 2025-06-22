@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     # MongoDB Database
     mongodb:
@@ -25,8 +23,8 @@ services:
     # Hub Service Application
     hub-service:
         build:
-            context: .
-            dockerfile: Dockerfile
+            context: ..
+            dockerfile: compose/Dockerfile
         container_name: hub-service-app
         restart: unless-stopped
         ports:

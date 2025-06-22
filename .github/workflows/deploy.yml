@@ -1,0 +1,33 @@
+name: Deploy to Production
+
+on:
+    push:
+        branches:
+            - main
+            - 'feature/**'
+
+jobs:
+    test-and-build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '1.22' # Thay phiên bản Go của bạn ở đây
+
+            - name: Build
+              run: go build -v ./...
+
+            - name: Test
+              run: go test -v ./...
+
+    deploy-production:
+        needs: test-and-build
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        steps:
+            - name: Trigger Render Production Deploy
+              run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}

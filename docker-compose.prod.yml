@@ -14,7 +14,6 @@ services:
             - '127.0.0.1:27017:27017' # Only accessible from localhost
         volumes:
             - mongodb_data:/data/db
-            - ./mongo-init:/docker-entrypoint-initdb.d
         networks:
             - hub-network
         healthcheck:

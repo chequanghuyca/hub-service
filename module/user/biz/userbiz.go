@@ -216,28 +216,22 @@ func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64, sortBy, so
 func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginRequest) (*model.LoginResponse, error) {
 	// 1. Verify id_token with Google
 	resp, err := http.Get(os.Getenv("SYSTEM_GOOGLE_AUTHENTICATOR") + req.IdToken)
-
 	if err != nil {
 		return nil, errors.New("failed to verify id_token with Google")
 	}
-
 	defer resp.Body.Close()
-
 	if resp.StatusCode != 200 {
 		return nil, errors.New("invalid id_token")
 	}
-
 	var googleResp struct {
 		Email   string `json:"email"`
 		Sub     string `json:"sub"`
 		Name    string `json:"name"`
 		Picture string `json:"picture"`
 	}
-
 	if err := json.NewDecoder(resp.Body).Decode(&googleResp); err != nil {
 		return nil, errors.New("failed to decode google response")
 	}
-
 	if googleResp.Email != req.Email {
 		return nil, errors.New("email does not match id_token")
 	}
@@ -247,7 +241,6 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 	if err != nil {
 		return nil, err
 	}
-
 	if user == nil {
 		userCreate := &model.UserCreate{
 			Email:      req.Email,
@@ -258,9 +251,44 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 			ProviderID: googleResp.Sub,
 		}
 		user, err = biz.store.Create(ctx, userCreate)
-
 		if err != nil {
 			return nil, err
+		}
+	} else {
+		update := false
+		updateData := make(map[string]interface{})
+		if user.Name != req.Name {
+			updateData["name"] = req.Name
+			update = true
+		}
+		if user.Avatar != req.Avatar {
+			updateData["avatar"] = req.Avatar
+			update = true
+		}
+		if user.Provider != req.Provider {
+			updateData["provider"] = req.Provider
+			update = true
+		}
+		if user.ProviderID != googleResp.Sub {
+			updateData["provider_id"] = googleResp.Sub
+			update = true
+		}
+		if update {
+			if err := biz.store.UpdateFields(ctx, user.ID, updateData); err == nil {
+				// cập nhật lại user struct với dữ liệu mới
+				if v, ok := updateData["name"]; ok {
+					user.Name = v.(string)
+				}
+				if v, ok := updateData["avatar"]; ok {
+					user.Avatar = v.(string)
+				}
+				if v, ok := updateData["provider"]; ok {
+					user.Provider = v.(string)
+				}
+				if v, ok := updateData["provider_id"]; ok {
+					user.ProviderID = v.(string)
+				}
+			}
 		}
 	}
 
@@ -268,13 +296,10 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 		UserID: user.ID,
 		Role:   user.Role,
 	}
-
 	token, err := biz.tokenProvider.Generate(payload, 60*60*24)
-
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}
-
 	loginResponse := &model.LoginResponse{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,

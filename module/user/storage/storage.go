@@ -22,3 +22,10 @@ func (s *UserStorage) UpdateRole(ctx context.Context, id primitive.ObjectID, rol
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
 	return err
 }
+
+func (s *UserStorage) UpdateFields(ctx context.Context, id primitive.ObjectID, fields map[string]interface{}) error {
+	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
+	update := bson.M{"$set": fields}
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	return err
+}

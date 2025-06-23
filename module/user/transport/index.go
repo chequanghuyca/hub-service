@@ -12,7 +12,6 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
 		users.POST("/social-login", SocialLogin(appCtx))
-		users.POST("/login", Login(appCtx))
 		users.POST("/refresh", RefreshToken(appCtx))
 
 		protected := users.Group("/")

@@ -213,16 +213,6 @@ definitions:
       status:
         type: string
     type: object
-  model.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
   model.LoginResponse:
     properties:
       access_token:
@@ -308,17 +298,6 @@ definitions:
         type: number
       user_translation:
         type: string
-    type: object
-  model.UpdateRoleRequest:
-    properties:
-      role:
-        enum:
-        - admin
-        - client
-        - super_admin
-        type: string
-    required:
-    - role
     type: object
   model.UpdateUserResponse:
     properties:
@@ -904,73 +883,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user
-      tags:
-      - users
-  /api/users/{id}/role:
-    put:
-      consumes:
-      - application/json
-      description: Update role of a user (super_admin only)
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Role update info
-        in: body
-        name: role
-        required: true
-        schema:
-          $ref: '#/definitions/model.UpdateRoleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.UpdateUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update user role
-      tags:
-      - users
-  /api/users/login:
-    post:
-      consumes:
-      - application/json
-      description: Login with email and password to get access token
-      parameters:
-      - description: Login credentials
-        in: body
-        name: login
-        required: true
-        schema:
-          $ref: '#/definitions/model.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.LoginAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-      summary: User login
       tags:
       - users
   /api/users/refresh:

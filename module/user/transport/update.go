@@ -21,8 +21,6 @@ import (
 // @Param user body model.UserUpdate true "User update information"
 // @Security BearerAuth
 // @Success 200 {object} model.UpdateUserResponse
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
 // @Router /api/users/{id} [put]
 func UpdateUser(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {

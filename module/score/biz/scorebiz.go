@@ -171,7 +171,3 @@ func (biz *ScoreBiz) GetUserScores(ctx context.Context, userID primitive.ObjectI
 		Scores:  challengeScores,
 	}, nil
 }
-
-func (biz *ScoreBiz) GetTotalScore(ctx context.Context, userID primitive.ObjectID) (*scoremodel.GetTotalScoreResponse, error) {
-	return biz.scoreStorage.GetTotalScore(ctx, userID)
-}

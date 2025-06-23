@@ -7,27 +7,28 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Email     string             `bson:"email" json:"email"`
-	Password  string             `bson:"password" json:"-"`
-	Name      string             `bson:"name" json:"name"`
-	Avatar    string             `bson:"avatar,omitempty" json:"avatar,omitempty"`
-	Role      string             `bson:"role" json:"role"`
-	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Email      string             `bson:"email" json:"email"`
+	Name       string             `bson:"name" json:"name"`
+	Avatar     string             `bson:"avatar,omitempty" json:"avatar,omitempty"`
+	Role       string             `bson:"role" json:"role"`
+	Provider   string             `bson:"provider,omitempty" json:"provider,omitempty"`
+	ProviderID string             `bson:"provider_id,omitempty" json:"provider_id,omitempty"`
+	CreatedAt  time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt  time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type UserCreate struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Name     string `json:"name" binding:"required"`
-	Avatar   string `json:"avatar"`
-	Role     string `json:"role" binding:"required,oneof=admin client"`
+	Email      string `json:"email" binding:"required,email"`
+	Name       string `json:"name" binding:"required"`
+	Avatar     string `json:"avatar"`
+	Role       string `json:"role" binding:"required,oneof=admin client super_admin"`
+	Provider   string `json:"provider,omitempty"`
+	ProviderID string `json:"provider_id,omitempty"`
 }
 
 type UserUpdate struct {
-	Name   string `json:"name,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type UserResponse struct {
@@ -108,4 +109,17 @@ type ListUsersRequest struct {
 
 type ErrorResponse struct {
 	Error string `json:"error"`
+}
+
+type SocialLoginRequest struct {
+	Name       string `json:"name" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+	Avatar     string `json:"avatar"`
+	IdToken    string `json:"id_token" binding:"required"`
+	Provider   string `json:"provider" binding:"required"`
+	ProviderID string `json:"provider_id" binding:"required"`
+}
+
+type UpdateRoleRequest struct {
+	Role string `json:"role" binding:"required,oneof=admin client super_admin"`
 }

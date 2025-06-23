@@ -108,27 +108,8 @@ type GetUserScoresResponse struct {
 	Scores  []ChallengeScore `json:"scores"`
 }
 
-// GetTotalScoreRequest represents the request for getting total score
-type GetTotalScoreRequest struct {
-	UserID string `uri:"user_id" binding:"required"`
-}
-
-// GetTotalScoreResponse represents the response for getting total score
-type GetTotalScoreResponse struct {
-	UserID          string  `json:"user_id"`
-	TotalScore      float64 `json:"total_score"`
-	TotalChallenges int     `json:"total_challenges"`
-	AverageScore    float64 `json:"average_score"`
-	BestScore       float64 `json:"best_score"`
-}
-
 // API Response Models for Swagger
 type GetUserScoresAPIResponse struct {
 	Status string                `json:"status"`
 	Data   GetUserScoresResponse `json:"data"`
-}
-
-type GetTotalScoreAPIResponse struct {
-	Status string                `json:"status"`
-	Data   GetTotalScoreResponse `json:"data"`
 }

@@ -13,13 +13,14 @@ func (s *UserStorage) Create(ctx context.Context, userCreate *model.UserCreate) 
 
 	now := time.Now()
 	user := &model.User{
-		Email:     userCreate.Email,
-		Password:  userCreate.Password, // In production, hash the password
-		Name:      userCreate.Name,
-		Avatar:    userCreate.Avatar,
-		Role:      userCreate.Role,
-		CreatedAt: now,
-		UpdatedAt: now,
+		Email:      userCreate.Email,
+		Name:       userCreate.Name,
+		Avatar:     userCreate.Avatar,
+		Role:       userCreate.Role,
+		Provider:   userCreate.Provider,
+		ProviderID: userCreate.ProviderID,
+		CreatedAt:  now,
+		UpdatedAt:  now,
 	}
 
 	result, err := collection.InsertOne(ctx, user)

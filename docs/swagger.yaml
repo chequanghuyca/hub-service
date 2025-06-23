@@ -160,13 +160,6 @@ definitions:
         example: Formal Greetings
         type: string
     type: object
-  model.CreateUserResponse:
-    properties:
-      data:
-        $ref: '#/definitions/model.UserResponse'
-      status:
-        type: string
-    type: object
   model.DeleteUserResponse:
     properties:
       message:
@@ -177,26 +170,6 @@ definitions:
   model.ErrorResponse:
     properties:
       error:
-        type: string
-    type: object
-  model.GetTotalScoreAPIResponse:
-    properties:
-      data:
-        $ref: '#/definitions/model.GetTotalScoreResponse'
-      status:
-        type: string
-    type: object
-  model.GetTotalScoreResponse:
-    properties:
-      average_score:
-        type: number
-      best_score:
-        type: number
-      total_challenges:
-        type: integer
-      total_score:
-        type: number
-      user_id:
         type: string
     type: object
   model.GetUserResponse:
@@ -298,6 +271,27 @@ definitions:
     - challenge_id
     - user_translation
     type: object
+  model.SocialLoginRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      id_token:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+      provider_id:
+        type: string
+    required:
+    - email
+    - id_token
+    - name
+    - provider
+    - provider_id
+    type: object
   model.SubmitScoreResponse:
     properties:
       attempt_count:
@@ -315,34 +309,23 @@ definitions:
       user_translation:
         type: string
     type: object
+  model.UpdateRoleRequest:
+    properties:
+      role:
+        enum:
+        - admin
+        - client
+        - super_admin
+        type: string
+    required:
+    - role
+    type: object
   model.UpdateUserResponse:
     properties:
       data:
         $ref: '#/definitions/model.UserResponse'
       status:
         type: string
-    type: object
-  model.UserCreate:
-    properties:
-      avatar:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        minLength: 6
-        type: string
-      role:
-        enum:
-        - admin
-        - client
-        type: string
-    required:
-    - email
-    - name
-    - password
-    - role
     type: object
   model.UserResponse:
     properties:
@@ -376,8 +359,6 @@ definitions:
     type: object
   model.UserUpdate:
     properties:
-      avatar:
-        type: string
       name:
         type: string
     type: object
@@ -691,41 +672,6 @@ paths:
       summary: Send a single email
       tags:
       - email
-  /api/scores/total/{user_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get total score, average score, and best score for a user
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.GetTotalScoreAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/common.AppError'
-      security:
-      - BearerAuth: []
-      summary: Get user's total score
-      tags:
-      - scores
   /api/scores/user/{user_id}:
     get:
       consumes:
@@ -871,35 +817,6 @@ paths:
       summary: List users
       tags:
       - users
-    post:
-      consumes:
-      - application/json
-      description: Create a new user with email, password and name
-      parameters:
-      - description: User information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.UserCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.CreateUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-      summary: Create a new user
-      tags:
-      - users
   /api/users/{id}:
     delete:
       consumes:
@@ -984,17 +901,46 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.UpdateUserResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /api/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Update role of a user (super_admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role update info
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UpdateUserResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ErrorResponse'
-        "404":
-          description: Not Found
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Update user
+      summary: Update user role
       tags:
       - users
   /api/users/login:
@@ -1056,6 +1002,36 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Refresh access token
+      tags:
+      - users
+  /api/users/social-login:
+    post:
+      consumes:
+      - application/json
+      description: Login or register user via Google OAuth
+      parameters:
+      - description: Social login info
+        in: body
+        name: social
+        required: true
+        schema:
+          $ref: '#/definitions/model.SocialLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.LoginAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Social login (Google)
       tags:
       - users
 securityDefinitions:

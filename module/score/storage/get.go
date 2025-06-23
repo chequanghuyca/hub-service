@@ -125,18 +125,3 @@ func (s *Storage) GetUserScoreSummary(ctx context.Context, userID primitive.Obje
 		BestScore:       bestScore,
 	}, nil
 }
-
-func (s *Storage) GetTotalScore(ctx context.Context, userID primitive.ObjectID) (*model.GetTotalScoreResponse, error) {
-	summary, err := s.GetUserScoreSummary(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.GetTotalScoreResponse{
-		UserID:          userID.Hex(),
-		TotalScore:      summary.TotalScore,
-		TotalChallenges: summary.TotalChallenges,
-		AverageScore:    summary.AverageScore,
-		BestScore:       summary.BestScore,
-	}, nil
-}

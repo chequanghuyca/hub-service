@@ -2,13 +2,17 @@ package biz
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"hub-service/common"
 	"hub-service/core/appctx"
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
 	hash "hub-service/utils/hash"
+	"net/http"
+	"os"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -37,19 +41,7 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 		return nil, errors.New("user already exists")
 	}
 
-	// Hash password
-	hashedPassword := biz.hasher.Hash(userCreate.Password)
-
-	// Create user with hashed password
-	userCreateWithHash := &model.UserCreate{
-		Email:    userCreate.Email,
-		Password: hashedPassword,
-		Name:     userCreate.Name,
-		Avatar:   userCreate.Avatar,
-		Role:     userCreate.Role,
-	}
-
-	user, err := biz.store.Create(ctx, userCreateWithHash)
+	user, err := biz.store.Create(ctx, userCreate)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +59,9 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 
 func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.LoginResponse, error) {
 	user, err := biz.store.GetByEmail(ctx, email)
-	if err != nil {
+	if err != nil || user == nil {
 		return nil, errors.New("invalid credentials")
 	}
-
-	if err := biz.hasher.CheckPassword(user.Password, password); err != nil {
-		return nil, errors.New("invalid credentials")
-	}
-
 	payload := tokenprovider.TokenPayload{
 		UserID: user.ID,
 		Role:   user.Role,
@@ -85,7 +72,6 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}
-
 	loginResponse := &model.LoginResponse{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
@@ -99,7 +85,6 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 			UpdatedAt: user.UpdatedAt,
 		},
 	}
-
 	return loginResponse, nil
 }
 
@@ -226,4 +211,90 @@ func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64, sortBy, so
 	}
 
 	return responses, metadata, nil
+}
+
+func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginRequest) (*model.LoginResponse, error) {
+	// 1. Verify id_token with Google
+	resp, err := http.Get(os.Getenv("SYSTEM_GOOGLE_AUTHENTICATOR") + req.IdToken)
+
+	if err != nil {
+		return nil, errors.New("failed to verify id_token with Google")
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New("invalid id_token")
+	}
+
+	var googleResp struct {
+		Email   string `json:"email"`
+		Sub     string `json:"sub"`
+		Name    string `json:"name"`
+		Picture string `json:"picture"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&googleResp); err != nil {
+		return nil, errors.New("failed to decode google response")
+	}
+
+	if googleResp.Email != req.Email {
+		return nil, errors.New("email does not match id_token")
+	}
+
+	// 2. Find or create user
+	user, err := biz.store.GetByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		userCreate := &model.UserCreate{
+			Email:      req.Email,
+			Name:       req.Name,
+			Avatar:     req.Avatar,
+			Role:       common.RoleClient,
+			Provider:   req.Provider,
+			ProviderID: googleResp.Sub,
+		}
+		user, err = biz.store.Create(ctx, userCreate)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	payload := tokenprovider.TokenPayload{
+		UserID: user.ID,
+		Role:   user.Role,
+	}
+
+	token, err := biz.tokenProvider.Generate(payload, 60*60*24)
+
+	if err != nil {
+		return nil, errors.New("failed to generate token")
+	}
+
+	loginResponse := &model.LoginResponse{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		User: model.UserResponse{
+			ID:        user.ID,
+			Email:     user.Email,
+			Name:      user.Name,
+			Avatar:    user.Avatar,
+			Role:      user.Role,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+	}
+	return loginResponse, nil
+}
+
+func (biz *UserBiz) StoreUpdateRole(ctx context.Context, id primitive.ObjectID, role string) error {
+	return biz.store.UpdateRole(ctx, id, role)
+}
+
+func (biz *UserBiz) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	return biz.store.GetByEmail(ctx, email)
 }

@@ -12,10 +12,8 @@ import (
 func (s *UserStorage) List(ctx context.Context, limit, offset int64, sortBy, sortOrder, search string) ([]*model.User, error) {
 	collection := s.appCtx.GetDatabase().MongoDB.GetCollection("users")
 
-	// Build filter for search
 	filter := bson.M{}
 	if search != "" {
-		// Case-insensitive search in name and email
 		searchRegex := bson.M{"$regex": search, "$options": "i"}
 		filter["$or"] = []bson.M{
 			{"name": searchRegex},

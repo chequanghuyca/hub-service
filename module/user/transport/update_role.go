@@ -10,19 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// UpdateUserRole godoc
 // @Summary Update user role
 // @Description Update role of a user (super_admin only)
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param email query string true "User email"
-// @Param role query string true "Role"
+// @Param body body model.UpdateRoleRequest true "User email and new role"
 // @Security BearerAuth
 // @Success 200 {object} model.UpdateUserResponse
 // @Failure 400 {object} model.ErrorResponse
 // @Failure 403 {object} model.ErrorResponse
-// @Router /api/users/{id}/role [put]
-
+// @Router /api/users/role [put]
 func UpdateUserRole(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {

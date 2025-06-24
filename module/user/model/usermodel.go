@@ -116,5 +116,6 @@ type SocialLoginRequest struct {
 }
 
 type UpdateRoleRequest struct {
-	Role string `json:"role" binding:"required,oneof=admin client super_admin"`
+	Email string `json:"email" binding:"required,email"`
+	Role  string `json:"role" binding:"required,oneof=admin client super_admin"`
 }

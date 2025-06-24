@@ -299,6 +299,20 @@ definitions:
       user_translation:
         type: string
     type: object
+  model.UpdateRoleRequest:
+    properties:
+      email:
+        type: string
+      role:
+        enum:
+        - admin
+        - client
+        - super_admin
+        type: string
+    required:
+    - email
+    - role
+    type: object
   model.UpdateUserResponse:
     properties:
       data:
@@ -914,6 +928,38 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Refresh access token
+      tags:
+      - users
+  /api/users/role:
+    put:
+      consumes:
+      - application/json
+      description: Update role of a user (super_admin only)
+      parameters:
+      - description: User email and new role
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UpdateUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user role
       tags:
       - users
   /api/users/social-login:

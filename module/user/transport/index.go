@@ -23,7 +23,7 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 
 			// Delete user: only for super admin
 			protected.DELETE("/:id", auth.RequireRoles(common.RoleSuperAdmin, common.RoleAdmin), DeleteUser(appCtx))
-			protected.PUT(":id/role", auth.RequireRoles(common.RoleSuperAdmin), UpdateUserRole(appCtx))
+			protected.PUT("/role", auth.RequireRoles(common.RoleSuperAdmin), UpdateUserRole(appCtx))
 		}
 	}
 }

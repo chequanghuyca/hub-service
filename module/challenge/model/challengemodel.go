@@ -14,8 +14,10 @@ type Challenge struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty" example:"62b4c3789196e8a159933552"`
 	Title      string             `json:"title" bson:"title" example:"Greetings"`
 	Content    string             `json:"content" bson:"content" example:"Hello, world!"`
-	SourceLang string             `json:"source_lang" bson:"source_lang" example:"EN"`
-	TargetLang string             `json:"target_lang" bson:"target_lang" example:"VI"`
+	SourceLang string             `json:"source_lang" bson:"source_lang" example:"VI"`
+	TargetLang string             `json:"target_lang" bson:"target_lang" example:"EN"`
+	Difficulty string             `json:"difficulty" bson:"difficulty" example:"easy"`
+	Category   string             `json:"category" bson:"category" example:"work"`
 	CreatedAt  *time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"updated_at" bson:"updated_at"`
 }
@@ -30,8 +32,10 @@ type ChallengeCreate struct {
 	ID         primitive.ObjectID `json:"-" bson:"_id,omitempty"`
 	Title      string             `json:"title" bson:"title" binding:"required" example:"Greetings"`
 	Content    string             `json:"content" bson:"content" binding:"required" example:"Hello, world!"`
-	SourceLang string             `json:"source_lang" bson:"source_lang" binding:"required" example:"EN"`
-	TargetLang string             `json:"target_lang" bson:"target_lang" binding:"required" example:"VI"`
+	SourceLang string             `json:"source_lang" bson:"source_lang" binding:"required" example:"VI"`
+	TargetLang string             `json:"target_lang" bson:"target_lang" binding:"required" example:"EN"`
+	Difficulty string             `json:"difficulty" bson:"difficulty" binding:"required, oneof=easy medium hard" example:"easy"`
+	Category   string             `json:"category" bson:"category" binding:"required, oneof=work life travel daily_life entertainment education economy health sport technology culture" example:"work"`
 	CreatedAt  *time.Time         `json:"-" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"-" bson:"updated_at"`
 }
@@ -45,8 +49,10 @@ func (ChallengeCreate) TableName() string {
 type ChallengeUpdate struct {
 	Title      *string    `json:"title,omitempty" bson:"title,omitempty" example:"Formal Greetings"`
 	Content    *string    `json:"content,omitempty" bson:"content,omitempty" example:"Good morning, everyone."`
-	SourceLang *string    `json:"source_lang,omitempty" bson:"source_lang,omitempty" example:"EN-US"`
-	TargetLang *string    `json:"target_lang,omitempty" bson:"target_lang,omitempty" example:"DE"`
+	SourceLang *string    `json:"source_lang,omitempty" bson:"source_lang,omitempty" example:"VI"`
+	TargetLang *string    `json:"target_lang,omitempty" bson:"target_lang,omitempty" example:"EN"`
+	Difficulty *string    `json:"difficulty,omitempty" bson:"difficulty,omitempty" example:"easy"`
+	Category   *string    `json:"category,omitempty" bson:"category,omitempty" example:"work"`
 	UpdatedAt  *time.Time `json:"-" bson:"updated_at,omitempty"`
 }
 

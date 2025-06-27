@@ -7,9 +7,8 @@ import (
 	"hub-service/core/appctx"
 	challengemodel "hub-service/module/challenge/model"
 	"hub-service/module/translate/model"
+	"hub-service/utils/helper"
 	"log"
-	"regexp"
-	"strings"
 
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
@@ -34,14 +33,6 @@ func NewTranslateBiz(appCtx appctx.AppContext, store ChallengeStore) *TranslateB
 		appCtx: appCtx,
 		store:  store,
 	}
-}
-
-// normalizeString converts a string to lowercase, removes punctuation and extra spaces.
-func normalizeString(s string) string {
-	s = strings.ToLower(s)
-	re := regexp.MustCompile(`[^\w\s]`)
-	s = re.ReplaceAllString(s, "")
-	return strings.Join(strings.Fields(s), " ")
 }
 
 // ScoreTranslation scores a user's translation against DeepL's translation.
@@ -82,8 +73,8 @@ func (biz *TranslateBiz) ScoreTranslation(ctx context.Context, req model.ScoreRe
 
 	// Calculate score using Sørensen-Dice coefficient
 	score := strutil.Similarity(
-		normalizeString(req.UserTranslation),
-		normalizeString(deeplTranslation),
+		helper.NormalizeString(req.UserTranslation),
+		helper.NormalizeString(deeplTranslation),
 		metrics.NewSorensenDice(),
 	)
 

@@ -2,31 +2,13 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"hub-service/module/score/model"
+	"hub-service/utils/helper"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// toFloat64 safely converts an interface{} to float64, handling multiple numeric types.
-func toFloat64(v interface{}) (float64, error) {
-	switch i := v.(type) {
-	case float64:
-		return i, nil
-	case float32:
-		return float64(i), nil
-	case int64:
-		return float64(i), nil
-	case int32:
-		return float64(i), nil
-	case int:
-		return float64(i), nil
-	default:
-		return 0, fmt.Errorf("cannot convert %T to float64", v)
-	}
-}
 
 func (s *Storage) GetScoreByUserAndChallenge(ctx context.Context, userID, challengeID primitive.ObjectID) (*model.Score, error) {
 	collection := s.db.MongoDB.GetCollection(model.CollectionName)
@@ -113,9 +95,9 @@ func (s *Storage) GetUserScoreSummary(ctx context.Context, userID primitive.Obje
 
 	result := results[0]
 
-	totalScore, _ := toFloat64(result["total_score"])
-	avgScore, _ := toFloat64(result["average_score"])
-	bestScore, _ := toFloat64(result["best_score"])
+	totalScore, _ := helper.ToFloat64(result["total_score"])
+	avgScore, _ := helper.ToFloat64(result["average_score"])
+	bestScore, _ := helper.ToFloat64(result["best_score"])
 
 	return &model.UserScoreSummary{
 		UserID:          userID,

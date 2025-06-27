@@ -83,19 +83,25 @@ definitions:
   hub-service_module_challenge_model.Challenge:
     description: Contains the details of a translation challenge.
     properties:
+      category:
+        example: work
+        type: string
       content:
         example: Hello, world!
         type: string
       created_at:
         type: string
+      difficulty:
+        example: easy
+        type: string
       id:
         example: 62b4c3789196e8a159933552
         type: string
       source_lang:
-        example: EN
+        example: VI
         type: string
       target_lang:
-        example: VI
+        example: EN
         type: string
       title:
         example: Greetings
@@ -106,20 +112,28 @@ definitions:
   model.ChallengeCreate:
     description: Required fields for creating a new translation challenge.
     properties:
+      category:
+        example: work
+        type: string
       content:
         example: Hello, world!
         type: string
+      difficulty:
+        example: easy
+        type: string
       source_lang:
-        example: EN
+        example: VI
         type: string
       target_lang:
-        example: VI
+        example: EN
         type: string
       title:
         example: Greetings
         type: string
     required:
+    - category
     - content
+    - difficulty
     - source_lang
     - target_lang
     - title
@@ -147,14 +161,20 @@ definitions:
     description: Fields available for updating a translation challenge. All fields
       are optional.
     properties:
+      category:
+        example: work
+        type: string
       content:
         example: Good morning, everyone.
         type: string
+      difficulty:
+        example: easy
+        type: string
       source_lang:
-        example: EN-US
+        example: VI
         type: string
       target_lang:
-        example: DE
+        example: EN
         type: string
       title:
         example: Formal Greetings
@@ -362,55 +382,6 @@ info:
   version: "1.0"
 paths:
   /api/challenges:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of translation challenges with pagination. All authenticated
-        users can access this endpoint.
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Number of items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            allOf:
-            - $ref: '#/definitions/common.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
-                  type: array
-                meta:
-                  $ref: '#/definitions/common.Paging'
-              type: object
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/common.AppError'
-      security:
-      - BearerAuth: []
-      summary: List challenges
-      tags:
-      - challenges
     post:
       consumes:
       - application/json
@@ -599,6 +570,56 @@ paths:
       summary: Update a challenge
       tags:
       - challenges
+  /api/challenges/list:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of translation challenges with pagination. All authenticated
+        users can access this endpoint.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
+                  type: array
+                meta:
+                  $ref: '#/definitions/common.Paging'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: List challenges
+      tags:
+      - challenges
   /api/email/multiple:
     post:
       consumes:
@@ -746,70 +767,6 @@ paths:
       summary: Score and save user translation for a challenge
       tags:
       - translate
-  /api/users:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of users with pagination, sorting, and search
-      parameters:
-      - description: 'Page number (minimum: 1, default: 1)'
-        in: query
-        minimum: 1
-        name: page
-        type: integer
-      - description: 'Number of items per page (minimum: 1, maximum: 100, default:
-          10)'
-        in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - default: created_at
-        description: Sort by field (name, email, created_at, updated_at)
-        enum:
-        - name
-        - email
-        - created_at
-        - updated_at
-        in: query
-        name: sort_by
-        type: string
-      - default: desc
-        description: Sort order (asc, desc)
-        enum:
-        - asc
-        - desc
-        in: query
-        name: sort_order
-        type: string
-      - description: Search by name or email (case-insensitive)
-        in: query
-        name: search
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Returns users list with pagination metadata
-          schema:
-            $ref: '#/definitions/model.ListUsersResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/model.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: List users
-      tags:
-      - users
   /api/users/{id}:
     delete:
       consumes:
@@ -897,6 +854,70 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user
+      tags:
+      - users
+  /api/users/list:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of users with pagination, sorting, and search
+      parameters:
+      - description: 'Page number (minimum: 1, default: 1)'
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: 'Number of items per page (minimum: 1, maximum: 100, default:
+          10)'
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: created_at
+        description: Sort by field (name, email, created_at, updated_at)
+        enum:
+        - name
+        - email
+        - created_at
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: Sort order (asc, desc)
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Search by name or email (case-insensitive)
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns users list with pagination metadata
+          schema:
+            $ref: '#/definitions/model.ListUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List users
       tags:
       - users
   /api/users/refresh:

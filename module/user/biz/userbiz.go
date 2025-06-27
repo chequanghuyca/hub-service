@@ -107,15 +107,15 @@ func (biz *UserBiz) RefreshToken(ctx context.Context, refreshToken string) (*mod
 		Role:   user.Role,
 	}
 
-	// Generate a new pair of tokens, new access token expires in 1 day
-	token, err := biz.tokenProvider.Generate(newPayload, 60*60*24)
+	// Generate only a new access token, keep the old refresh token
+	newAccessToken, err := biz.tokenProvider.GenerateAccessToken(newPayload, 60*60*24)
 	if err != nil {
-		return nil, errors.New("failed to generate token")
+		return nil, errors.New("failed to generate access token")
 	}
 
 	loginResponse := &model.LoginResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken, // Return the new refresh token as well
+		AccessToken:  newAccessToken,
+		RefreshToken: refreshToken, // Keep the old refresh token
 		User: model.UserResponse{
 			ID:        user.ID,
 			Email:     user.Email,

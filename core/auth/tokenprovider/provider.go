@@ -12,6 +12,8 @@ import (
 type Provider interface {
 	// Generate generates a new token pair (access and refresh).
 	Generate(data TokenPayload, expiry int) (*Token, error)
+	// GenerateAccessToken generates only a new access token.
+	GenerateAccessToken(data TokenPayload, expiry int) (string, error)
 	// Validate validates a token string and returns its payload.
 	Validate(token string) (*TokenPayload, error)
 }

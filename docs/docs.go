@@ -16,6 +16,81 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/challenges": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new translation challenge and store it in the database. Only admin and super_admin can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "challenges"
+                ],
+                "summary": "Create a new challenge",
+                "parameters": [
+                    {
+                        "description": "Challenge data to create",
+                        "name": "challenge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChallengeCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created. Returns the ID of the new challenge.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only admin and super_admin can access",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/challenges/list": {
             "get": {
                 "security": [
                     {
@@ -82,79 +157,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/common.AppError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/common.AppError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new translation challenge and store it in the database. Only admin and super_admin can access this endpoint.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "challenges"
-                ],
-                "summary": "Create a new challenge",
-                "parameters": [
-                    {
-                        "description": "Challenge data to create",
-                        "name": "challenge",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.ChallengeCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully created. Returns the ID of the new challenge.",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/common.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/common.AppError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/common.AppError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden - Only admin and super_admin can access",
                         "schema": {
                             "$ref": "#/definitions/common.AppError"
                         }
@@ -630,7 +632,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users": {
+        "/api/users/list": {
             "get": {
                 "security": [
                     {
@@ -1132,6 +1134,10 @@ const docTemplate = `{
             "description": "Contains the details of a translation challenge.",
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "work"
+                },
                 "content": {
                     "type": "string",
                     "example": "Hello, world!"
@@ -1139,17 +1145,21 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "difficulty": {
+                    "type": "string",
+                    "example": "easy"
+                },
                 "id": {
                     "type": "string",
                     "example": "62b4c3789196e8a159933552"
                 },
                 "source_lang": {
                     "type": "string",
-                    "example": "EN"
+                    "example": "VI"
                 },
                 "target_lang": {
                     "type": "string",
-                    "example": "VI"
+                    "example": "EN"
                 },
                 "title": {
                     "type": "string",
@@ -1164,23 +1174,33 @@ const docTemplate = `{
             "description": "Required fields for creating a new translation challenge.",
             "type": "object",
             "required": [
+                "category",
                 "content",
+                "difficulty",
                 "source_lang",
                 "target_lang",
                 "title"
             ],
             "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "work"
+                },
                 "content": {
                     "type": "string",
                     "example": "Hello, world!"
                 },
+                "difficulty": {
+                    "type": "string",
+                    "example": "easy"
+                },
                 "source_lang": {
                     "type": "string",
-                    "example": "EN"
+                    "example": "VI"
                 },
                 "target_lang": {
                     "type": "string",
-                    "example": "VI"
+                    "example": "EN"
                 },
                 "title": {
                     "type": "string",
@@ -1221,17 +1241,25 @@ const docTemplate = `{
             "description": "Fields available for updating a translation challenge. All fields are optional.",
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "work"
+                },
                 "content": {
                     "type": "string",
                     "example": "Good morning, everyone."
                 },
+                "difficulty": {
+                    "type": "string",
+                    "example": "easy"
+                },
                 "source_lang": {
                     "type": "string",
-                    "example": "EN-US"
+                    "example": "VI"
                 },
                 "target_lang": {
                     "type": "string",
-                    "example": "DE"
+                    "example": "EN"
                 },
                 "title": {
                     "type": "string",

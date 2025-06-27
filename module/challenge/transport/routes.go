@@ -16,7 +16,7 @@ func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
 			protected.GET("/:id", GetChallenge(appCtx))
-			protected.GET("", ListChallenge(appCtx))
+			protected.GET("/list", ListChallenge(appCtx))
 		}
 
 		// Write operations - only for admin and super_admin

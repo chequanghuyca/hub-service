@@ -24,7 +24,7 @@ import (
 // @Failure 400 {object} common.AppError "Bad request"
 // @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 500 {object} common.AppError "Internal server error"
-// @Router /api/challenges [get]
+// @Router /api/challenges/list [get]
 func ListChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var paging common.Paging

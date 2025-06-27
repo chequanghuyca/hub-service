@@ -11,6 +11,7 @@ import (
 func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
+		users.GET("/list", ListUsers(appCtx))
 		users.POST("/social-login", SocialLogin(appCtx))
 		users.POST("/refresh", RefreshToken(appCtx))
 
@@ -18,10 +19,7 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
 			protected.GET("/:id", GetUserByID(appCtx))
-			protected.GET("/", ListUsers(appCtx))
 			protected.PUT("/:id", UpdateUser(appCtx))
-
-			// Delete user: only for super admin
 			protected.DELETE("/:id", auth.RequireRoles(common.RoleSuperAdmin, common.RoleAdmin), DeleteUser(appCtx))
 			protected.PUT("/role", auth.RequireRoles(common.RoleSuperAdmin), UpdateUserRole(appCtx))
 		}

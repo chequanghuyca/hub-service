@@ -25,7 +25,7 @@ import (
 // @Failure 401 {object} model.ErrorResponse
 // @Failure 403 {object} model.ErrorResponse
 // @Security BearerAuth
-// @Router /api/users [get]
+// @Router /api/users/list [get]
 func ListUsers(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.ListUsersRequest

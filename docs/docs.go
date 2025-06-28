@@ -1184,6 +1184,19 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "type": "string",
+                    "enum": [
+                        "work",
+                        "life",
+                        "travel",
+                        "daily_life",
+                        "entertainment",
+                        "education",
+                        "economy",
+                        "health",
+                        "sport",
+                        "technology",
+                        "culture"
+                    ],
                     "example": "work"
                 },
                 "content": {
@@ -1192,6 +1205,11 @@ const docTemplate = `{
                 },
                 "difficulty": {
                     "type": "string",
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ],
                     "example": "easy"
                 },
                 "source_lang": {
@@ -1243,26 +1261,50 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "type": "string",
+                    "enum": [
+                        "work",
+                        "life",
+                        "travel",
+                        "daily_life",
+                        "entertainment",
+                        "education",
+                        "economy",
+                        "health",
+                        "sport",
+                        "technology",
+                        "culture"
+                    ],
                     "example": "work"
                 },
                 "content": {
                     "type": "string",
+                    "minLength": 1,
                     "example": "Good morning, everyone."
                 },
                 "difficulty": {
                     "type": "string",
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ],
                     "example": "easy"
                 },
                 "source_lang": {
                     "type": "string",
+                    "maxLength": 2,
+                    "minLength": 2,
                     "example": "VI"
                 },
                 "target_lang": {
                     "type": "string",
+                    "maxLength": 2,
+                    "minLength": 2,
                     "example": "EN"
                 },
                 "title": {
                     "type": "string",
+                    "minLength": 1,
                     "example": "Formal Greetings"
                 }
             }
@@ -1565,7 +1607,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "Type \"Bearer\" followed by a space and your token.",
+            "description": "Enter your access token directly (without 'Bearer ' prefix). The system will automatically handle both formats.",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -1580,7 +1622,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Hub Service API",
-	Description:      "This is a sample hub service API.",
+	Description:      "This is a sample hub service API. You can enter your access token directly without 'Bearer ' prefix.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

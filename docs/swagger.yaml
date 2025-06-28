@@ -113,12 +113,28 @@ definitions:
     description: Required fields for creating a new translation challenge.
     properties:
       category:
+        enum:
+        - work
+        - life
+        - travel
+        - daily_life
+        - entertainment
+        - education
+        - economy
+        - health
+        - sport
+        - technology
+        - culture
         example: work
         type: string
       content:
         example: Hello, world!
         type: string
       difficulty:
+        enum:
+        - easy
+        - medium
+        - hard
         example: easy
         type: string
       source_lang:
@@ -162,22 +178,44 @@ definitions:
       are optional.
     properties:
       category:
+        enum:
+        - work
+        - life
+        - travel
+        - daily_life
+        - entertainment
+        - education
+        - economy
+        - health
+        - sport
+        - technology
+        - culture
         example: work
         type: string
       content:
         example: Good morning, everyone.
+        minLength: 1
         type: string
       difficulty:
+        enum:
+        - easy
+        - medium
+        - hard
         example: easy
         type: string
       source_lang:
         example: VI
+        maxLength: 2
+        minLength: 2
         type: string
       target_lang:
         example: EN
+        maxLength: 2
+        minLength: 2
         type: string
       title:
         example: Formal Greetings
+        minLength: 1
         type: string
     type: object
   model.DeleteUserResponse:
@@ -377,7 +415,8 @@ definitions:
     type: object
 info:
   contact: {}
-  description: This is a sample hub service API.
+  description: This is a sample hub service API. You can enter your access token directly
+    without 'Bearer ' prefix.
   title: Hub Service API
   version: "1.0"
 paths:
@@ -1015,7 +1054,8 @@ paths:
       - users
 securityDefinitions:
   BearerAuth:
-    description: Type "Bearer" followed by a space and your token.
+    description: Enter your access token directly (without 'Bearer ' prefix). The
+      system will automatically handle both formats.
     in: header
     name: Authorization
     type: apiKey

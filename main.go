@@ -17,11 +17,11 @@ import (
 
 // @title Hub Service API
 // @version 1.0
-// @description This is a sample hub service API.
+// @description This is a sample hub service API. You can enter your access token directly without 'Bearer ' prefix.
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-// @description Type "Bearer" followed by a space and your token.
+// @description Enter your access token directly (without 'Bearer ' prefix). The system will automatically handle both formats.
 func main() {
 	godotenv.Load()
 

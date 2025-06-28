@@ -35,11 +35,19 @@ func AuthMiddleware(appCtx appctx.AppContext) gin.HandlerFunc {
 }
 
 func extractTokenFromHeader(s string) (string, error) {
-	parts := strings.Split(s, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("invalid authorization header format")
+	if s == "" {
+		return "", errors.New("authorization header is required")
 	}
-	return parts[1], nil
+
+	if strings.HasPrefix(s, "Bearer ") {
+		token := strings.TrimPrefix(s, "Bearer ")
+		if token == "" {
+			return "", errors.New("token is empty after removing 'Bearer ' prefix")
+		}
+		return token, nil
+	} else {
+		return s, nil
+	}
 }
 
 // RequireRoles middleware checks if user has one of the required roles

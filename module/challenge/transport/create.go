@@ -42,3 +42,11 @@ func CreateChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data.ID))
 	}
 }
+
+// GetChallengeExamples returns example values for API documentation
+func GetChallengeExamples() map[string]interface{} {
+	return map[string]interface{}{
+		"difficulty": model.GetValidDifficulties(),
+		"category":   model.GetValidCategories(),
+	}
+}

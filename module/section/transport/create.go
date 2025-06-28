@@ -11,6 +11,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateSection godoc
+// @Summary Create a new section
+// @Description Create a new section for a challenge. Only admin and super_admin can access this endpoint.
+// @Tags sections
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param section body model.SectionCreate true "Section data"
+// @Success 200 {object} common.Response{data=string} "Successfully created. Returns the ID of the new section."
+// @Failure 400 {object} common.AppError "Bad request"
+// @Failure 401 {object} common.AppError "Unauthorized"
+// @Failure 403 {object} common.AppError "Forbidden - Only admin and super_admin can access"
+// @Failure 500 {object} common.AppError "Internal server error"
+// @Router /api/sections [post]
 func CreateSection(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var section model.SectionCreate

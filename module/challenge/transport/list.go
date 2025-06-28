@@ -20,6 +20,7 @@ import (
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of items per page" default(10)
+// @Param section_id query string false "Filter by section ID"
 // @Success 200 {object} common.Response{data=[]model.Challenge,meta=common.Paging} "Success"
 // @Failure 400 {object} common.AppError "Bad request"
 // @Failure 401 {object} common.AppError "Unauthorized"
@@ -33,10 +34,13 @@ func ListChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 		}
 		paging.Fulfill()
 
+		// Get section_id from query parameter
+		sectionID := c.Query("section_id")
+
 		store := storage.NewStorage(appCtx.GetDatabase())
 		business := biz.NewListChallengeBiz(store)
 
-		result, err := business.ListChallenge(c.Request.Context(), &paging)
+		result, err := business.ListChallenge(c.Request.Context(), &paging, sectionID)
 		if err != nil {
 			panic(err)
 		}

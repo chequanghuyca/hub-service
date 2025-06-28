@@ -84,3 +84,39 @@ type SectionGetDetailResponse struct {
 	Status string  `json:"status"`
 	Data   Section `json:"data"`
 }
+
+// SectionWithChallenges represents a section with its related challenges
+type SectionWithChallenges struct {
+	Section    Section           `json:"section"`
+	Challenges []Challenge       `json:"challenges"`
+	UserScore  *UserScoreSummary `json:"user_score,omitempty"`
+}
+
+// SectionWithScore represents a section with user score summary
+type SectionWithScore struct {
+	Section   Section           `json:"section"`
+	UserScore *UserScoreSummary `json:"user_score,omitempty"`
+}
+
+// Challenge represents a challenge (imported from challenge module)
+type Challenge struct {
+	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Title      string             `json:"title" bson:"title"`
+	Content    string             `json:"content" bson:"content"`
+	SourceLang string             `json:"source_lang" bson:"source_lang"`
+	TargetLang string             `json:"target_lang" bson:"target_lang"`
+	Difficulty string             `json:"difficulty" bson:"difficulty"`
+	Category   string             `json:"category" bson:"category"`
+	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id"`
+	CreatedAt  *time.Time         `json:"created_at" bson:"created_at"`
+	UpdatedAt  *time.Time         `json:"updated_at" bson:"updated_at"`
+}
+
+// UserScoreSummary represents a summary of user's scores (imported from score module)
+type UserScoreSummary struct {
+	UserID          primitive.ObjectID `json:"user_id"`
+	TotalScore      float64            `json:"total_score"`
+	TotalChallenges int                `json:"total_challenges"`
+	AverageScore    float64            `json:"average_score"`
+	BestScore       float64            `json:"best_score"`
+}

@@ -44,6 +44,7 @@ type Challenge struct {
 	TargetLang string             `json:"target_lang" bson:"target_lang" example:"EN"`
 	Difficulty string             `json:"difficulty" bson:"difficulty" example:"easy"`
 	Category   string             `json:"category" bson:"category" example:"work"`
+	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id" example:"62b4c3789196e8a159933552"`
 	CreatedAt  *time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"updated_at" bson:"updated_at"`
 }
@@ -62,6 +63,7 @@ type ChallengeCreate struct {
 	TargetLang string             `json:"target_lang" bson:"target_lang" binding:"required" example:"EN"`
 	Difficulty string             `json:"difficulty" bson:"difficulty" binding:"required,oneof=easy medium hard" example:"easy"`
 	Category   string             `json:"category" bson:"category" binding:"required,oneof=work life travel daily_life entertainment education economy health sport technology culture" example:"work"`
+	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id" example:"62b4c3789196e8a159933552"`
 	CreatedAt  *time.Time         `json:"-" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"-" bson:"updated_at"`
 }
@@ -73,13 +75,14 @@ func (ChallengeCreate) TableName() string {
 // ChallengeUpdate is the model for updating an existing challenge.
 // @Description Fields available for updating a translation challenge. All fields are optional.
 type ChallengeUpdate struct {
-	Title      *string    `json:"title,omitempty" bson:"title,omitempty" binding:"omitempty,min=1" example:"Formal Greetings"`
-	Content    *string    `json:"content,omitempty" bson:"content,omitempty" binding:"omitempty,min=1" example:"Good morning, everyone."`
-	SourceLang *string    `json:"source_lang,omitempty" bson:"source_lang,omitempty" binding:"omitempty,min=2,max=2" example:"VI"`
-	TargetLang *string    `json:"target_lang,omitempty" bson:"target_lang,omitempty" binding:"omitempty,min=2,max=2" example:"EN"`
-	Difficulty *string    `json:"difficulty,omitempty" bson:"difficulty,omitempty" binding:"omitempty,oneof=easy medium hard" example:"easy"`
-	Category   *string    `json:"category,omitempty" bson:"category,omitempty" binding:"omitempty,oneof=work life travel daily_life entertainment education economy health sport technology culture" example:"work"`
-	UpdatedAt  *time.Time `json:"-" bson:"updated_at,omitempty"`
+	Title      *string             `json:"title,omitempty" bson:"title,omitempty" binding:"omitempty,min=1" example:"Formal Greetings"`
+	Content    *string             `json:"content,omitempty" bson:"content,omitempty" binding:"omitempty,min=1" example:"Good morning, everyone."`
+	SourceLang *string             `json:"source_lang,omitempty" bson:"source_lang,omitempty" binding:"omitempty,min=2,max=2" example:"VI"`
+	TargetLang *string             `json:"target_lang,omitempty" bson:"target_lang,omitempty" binding:"omitempty,min=2,max=2" example:"EN"`
+	Difficulty *string             `json:"difficulty,omitempty" bson:"difficulty,omitempty" binding:"omitempty,oneof=easy medium hard" example:"easy"`
+	Category   *string             `json:"category,omitempty" bson:"category,omitempty" binding:"omitempty,oneof=work life travel daily_life entertainment education economy health sport technology culture" example:"work"`
+	SectionID  *primitive.ObjectID `json:"section_id,omitempty" bson:"section_id,omitempty" example:"62b4c3789196e8a159933552"`
+	UpdatedAt  *time.Time          `json:"-" bson:"updated_at,omitempty"`
 }
 
 func (ChallengeUpdate) TableName() string {

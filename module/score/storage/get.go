@@ -107,3 +107,98 @@ func (s *Storage) GetUserScoreSummary(ctx context.Context, userID primitive.Obje
 		BestScore:       bestScore,
 	}, nil
 }
+
+// GetUserScoresBySection gets user scores for challenges in a specific section
+func (s *Storage) GetUserScoresBySection(ctx context.Context, userID, sectionID primitive.ObjectID) ([]model.Score, error) {
+	collection := s.db.MongoDB.GetCollection(model.CollectionName)
+
+	// First, get all challenge IDs for the section
+	challengeCollection := s.db.MongoDB.GetCollection("challenges")
+	challengeFilter := bson.M{"section_id": sectionID}
+
+	challengeCursor, err := challengeCollection.Find(ctx, challengeFilter)
+	if err != nil {
+		return nil, err
+	}
+	defer challengeCursor.Close(ctx)
+
+	var challenges []bson.M
+	if err = challengeCursor.All(ctx, &challenges); err != nil {
+		return nil, err
+	}
+
+	if len(challenges) == 0 {
+		return []model.Score{}, nil
+	}
+
+	// Extract challenge IDs
+	var challengeIDs []primitive.ObjectID
+	for _, challenge := range challenges {
+		if id, ok := challenge["_id"].(primitive.ObjectID); ok {
+			challengeIDs = append(challengeIDs, id)
+		}
+	}
+
+	// Get scores for these challenges
+	filter := bson.M{
+		"user_id":      userID,
+		"challenge_id": bson.M{"$in": challengeIDs},
+	}
+
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var scores []model.Score
+	if err = cursor.All(ctx, &scores); err != nil {
+		return nil, err
+	}
+
+	return scores, nil
+}
+
+// GetUserSectionScoreSummary gets a summary of user's scores for a specific section
+func (s *Storage) GetUserSectionScoreSummary(ctx context.Context, userID, sectionID primitive.ObjectID) (*model.UserScoreSummary, error) {
+	scores, err := s.GetUserScoresBySection(ctx, userID, sectionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(scores) == 0 {
+		return &model.UserScoreSummary{
+			UserID:          userID,
+			TotalScore:      0,
+			TotalChallenges: 0,
+			AverageScore:    0,
+			BestScore:       0,
+		}, nil
+	}
+
+	var totalScore float64
+	var bestScore float64
+	totalChallenges := len(scores)
+
+	for _, score := range scores {
+		effectiveScore := score.BestScore
+		if effectiveScore == 0 {
+			effectiveScore = score.DeepLScore
+		}
+
+		totalScore += effectiveScore
+		if effectiveScore > bestScore {
+			bestScore = effectiveScore
+		}
+	}
+
+	averageScore := totalScore / float64(totalChallenges)
+
+	return &model.UserScoreSummary{
+		UserID:          userID,
+		TotalScore:      totalScore,
+		TotalChallenges: totalChallenges,
+		AverageScore:    averageScore,
+		BestScore:       bestScore,
+	}, nil
+}

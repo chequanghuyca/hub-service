@@ -1,10 +1,6 @@
 package storage
 
-import (
-	"context"
-	"hub-service/infrastructure/database/database"
-	"hub-service/module/section/model"
-)
+import "hub-service/infrastructure/database/database"
 
 type Storage struct {
 	db *database.Database
@@ -12,8 +8,4 @@ type Storage struct {
 
 func NewStorage(db *database.Database) *Storage {
 	return &Storage{db: db}
-}
-
-func (s *Storage) Create(ctx context.Context, data *model.SectionCreate) error {
-	return s.CreateSection(ctx, data)
 }

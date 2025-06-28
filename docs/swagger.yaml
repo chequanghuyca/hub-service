@@ -97,6 +97,9 @@ definitions:
       id:
         example: 62b4c3789196e8a159933552
         type: string
+      section_id:
+        example: 62b4c3789196e8a159933552
+        type: string
       source_lang:
         example: VI
         type: string
@@ -108,6 +111,70 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  hub-service_module_score_model.UserScoreSummary:
+    properties:
+      average_score:
+        type: number
+      best_score:
+        type: number
+      total_challenges:
+        type: integer
+      total_score:
+        type: number
+      user_id:
+        type: string
+    type: object
+  hub-service_module_section_model.Challenge:
+    properties:
+      category:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      difficulty:
+        type: string
+      id:
+        type: string
+      section_id:
+        type: string
+      source_lang:
+        type: string
+      target_lang:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  hub-service_module_section_model.UserScoreSummary:
+    properties:
+      average_score:
+        type: number
+      best_score:
+        type: number
+      total_challenges:
+        type: integer
+      total_score:
+        type: number
+      user_id:
+        type: string
+    type: object
+  hub-service_module_user_model.PaginationMetadata:
+    properties:
+      has_next:
+        type: boolean
+      has_prev:
+        type: boolean
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
     type: object
   model.ChallengeCreate:
     description: Required fields for creating a new translation challenge.
@@ -136,6 +203,9 @@ definitions:
         - medium
         - hard
         example: easy
+        type: string
+      section_id:
+        example: 62b4c3789196e8a159933552
         type: string
       source_lang:
         example: VI
@@ -203,6 +273,9 @@ definitions:
         - hard
         example: easy
         type: string
+      section_id:
+        example: 62b4c3789196e8a159933552
+        type: string
       source_lang:
         example: VI
         maxLength: 2
@@ -251,7 +324,7 @@ definitions:
           $ref: '#/definitions/model.ChallengeScore'
         type: array
       summary:
-        $ref: '#/definitions/model.UserScoreSummary'
+        $ref: '#/definitions/hub-service_module_score_model.UserScoreSummary'
     type: object
   model.ListUsersResponse:
     properties:
@@ -260,7 +333,7 @@ definitions:
           $ref: '#/definitions/model.UserResponse'
         type: array
       metadata:
-        $ref: '#/definitions/model.PaginationMetadata'
+        $ref: '#/definitions/hub-service_module_user_model.PaginationMetadata'
       status:
         type: string
     type: object
@@ -279,21 +352,6 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/model.UserResponse'
-    type: object
-  model.PaginationMetadata:
-    properties:
-      has_next:
-        type: boolean
-      has_prev:
-        type: boolean
-      limit:
-        type: integer
-      page:
-        type: integer
-      total_items:
-        type: integer
-      total_pages:
-        type: integer
     type: object
   model.RefreshTokenRequest:
     properties:
@@ -318,6 +376,54 @@ definitions:
     required:
     - challenge_id
     - user_translation
+    type: object
+  model.Section:
+    description: Section of a challenge containing title and content.
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.SectionCreate:
+    description: Required fields for creating a new section.
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  model.SectionUpdate:
+    description: Optional fields for updating a section.
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  model.SectionWithChallenges:
+    properties:
+      challenges:
+        items:
+          $ref: '#/definitions/hub-service_module_section_model.Challenge'
+        type: array
+      section:
+        $ref: '#/definitions/model.Section'
+      user_score:
+        $ref: '#/definitions/hub-service_module_section_model.UserScoreSummary'
+    type: object
+  model.SectionWithScore:
+    properties:
+      section:
+        $ref: '#/definitions/model.Section'
+      user_score:
+        $ref: '#/definitions/hub-service_module_section_model.UserScoreSummary'
     type: object
   model.SocialLoginRequest:
     properties:
@@ -393,19 +499,6 @@ definitions:
       role:
         type: string
       updated_at:
-        type: string
-    type: object
-  model.UserScoreSummary:
-    properties:
-      average_score:
-        type: number
-      best_score:
-        type: number
-      total_challenges:
-        type: integer
-      total_score:
-        type: number
-      user_id:
         type: string
     type: object
   model.UserUpdate:
@@ -626,6 +719,10 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Filter by section ID
+        in: query
+        name: section_id
+        type: string
       produces:
       - application/json
       responses:
@@ -806,6 +903,249 @@ paths:
       summary: Get user's scores for all challenges
       tags:
       - scores
+  /api/sections:
+    post:
+      consumes:
+      - application/json
+      description: Create a new section for a challenge. Only admin and super_admin
+        can access this endpoint.
+      parameters:
+      - description: Section data
+        in: body
+        name: section
+        required: true
+        schema:
+          $ref: '#/definitions/model.SectionCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created. Returns the ID of the new section.
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new section
+      tags:
+      - sections
+  /api/sections/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a section and all its related challenges. Only admin and
+        super_admin can access this endpoint.
+      parameters:
+      - description: Section ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request - Invalid section ID
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Delete a section
+      tags:
+      - sections
+    get:
+      consumes:
+      - application/json
+      description: Get a section with all its related challenges and user score. All
+        authenticated users can access this endpoint.
+      parameters:
+      - description: Section ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.SectionWithChallenges'
+              type: object
+        "400":
+          description: Bad request - Invalid section ID
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get a section by ID
+      tags:
+      - sections
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing section by ID. Only admin and super_admin can
+        access this endpoint.
+      parameters:
+      - description: Section ID (MongoDB ObjectID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Section data to update
+        in: body
+        name: section
+        required: true
+        schema:
+          $ref: '#/definitions/model.SectionUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: Bad request or invalid ID format
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Update a section
+      tags:
+      - sections
+  /api/sections/list:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of sections with pagination and user scores. All authenticated
+        users can access this endpoint.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SectionWithScore'
+                  type: array
+                meta:
+                  $ref: '#/definitions/common.Paging'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get a list of sections with pagination and user scores
+      tags:
+      - sections
   /api/users/{id}:
     delete:
       consumes:

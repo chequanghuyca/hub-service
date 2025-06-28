@@ -12,7 +12,7 @@ func CorsConnect() gin.HandlerFunc {
 	godotenv.Load()
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{os.Getenv("BASE_URL_PORTFOLIO"), os.Getenv("BASE_URL_LOCAL"), os.Getenv("BASE_URL_DEV")},
+		AllowOrigins:     []string{os.Getenv("BASE_URL_PORTFOLIO"), os.Getenv("BASE_URL_LOCAL"), os.Getenv("BASE_URL_DEV"), os.Getenv("BASE_URL_TRANSMASTER_PROD")},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

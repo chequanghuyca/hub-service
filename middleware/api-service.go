@@ -5,7 +5,6 @@ import (
 	challengeTransport "hub-service/module/challenge/transport"
 	ginemail "hub-service/module/email/transport"
 	scoreTransport "hub-service/module/score/transport"
-	translateTransport "hub-service/module/translate/transport"
 	ginuser "hub-service/module/user/transport"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,6 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 
 	ginuser.RegisterRoutes(appCtx, v1)
 	ginemail.RegisterRoutes(appCtx, v1)
-	translateTransport.RegisterRoutes(v1, appCtx)
 	challengeTransport.RegisterRoutes(v1, appCtx)
 	scoreTransport.RegisterRoutes(v1, appCtx)
 }

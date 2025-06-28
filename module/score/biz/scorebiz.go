@@ -3,14 +3,20 @@ package biz
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
+	"hub-service/core/appctx"
+	challengemodel "hub-service/module/challenge/model"
 	challengestorage "hub-service/module/challenge/storage"
 	scoremodel "hub-service/module/score/model"
 	scorestorage "hub-service/module/score/storage"
-	translatebiz "hub-service/module/translate/biz"
-	translatemodel "hub-service/module/translate/model"
+	"hub-service/utils/helper"
 
+	"github.com/adrg/strutil"
+	"github.com/adrg/strutil/metrics"
+	"github.com/bounoable/deepl"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -18,13 +24,83 @@ var (
 	ErrChallengeNotFound = errors.New("challenge not found")
 )
 
+// ChallengeStore defines the interface for challenge data access.
+type ChallengeStore interface {
+	Get(ctx context.Context, id primitive.ObjectID) (*challengemodel.Challenge, error)
+}
+
+// TranslateBiz handles the business logic for translation scoring.
+type TranslateBiz struct {
+	appCtx appctx.AppContext
+	store  ChallengeStore
+}
+
+// NewTranslateBiz creates a new TranslateBiz instance.
+func NewTranslateBiz(appCtx appctx.AppContext, store ChallengeStore) *TranslateBiz {
+	return &TranslateBiz{
+		appCtx: appCtx,
+		store:  store,
+	}
+}
+
+// ScoreTranslation scores a user's translation against DeepL's translation.
+func (biz *TranslateBiz) ScoreTranslation(ctx context.Context, req scoremodel.ScoreRequest) (*scoremodel.ScoreResponse, error) {
+	challengeID, err := primitive.ObjectIDFromHex(req.ChallengeID)
+	if err != nil {
+		return nil, errors.New("invalid challenge ID format")
+	}
+
+	challenge, err := biz.store.Get(ctx, challengeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get challenge: %w", err)
+	}
+
+	// The challenge content can contain multiple sentences.
+	// For now, we treat the whole content as one sentence and sentence_index must be 0.
+	if req.SentenceIndex != 0 {
+		return nil, errors.New("sentence splitting not implemented, please use sentence_index 0")
+	}
+	originalSentence := challenge.Content
+
+	deeplClient := biz.appCtx.GetDeeplClient()
+	if deeplClient == nil {
+		return nil, errors.New("DeepL client is not configured")
+	}
+
+	// Get translation from DeepL
+	deeplTranslation, _, err := deeplClient.Translate(
+		ctx,
+		originalSentence,
+		deepl.Language(challenge.TargetLang),
+		deepl.SourceLang(deepl.Language(challenge.SourceLang)),
+	)
+	if err != nil {
+		log.Printf("DeepL API error: %v", err)
+		return nil, errors.New("failed to get translation from DeepL")
+	}
+
+	// Calculate score using Sørensen-Dice coefficient
+	score := strutil.Similarity(
+		helper.NormalizeString(req.UserTranslation),
+		helper.NormalizeString(deeplTranslation),
+		metrics.NewSorensenDice(),
+	)
+
+	return &scoremodel.ScoreResponse{
+		Score:            score * 100, // as percentage
+		UserTranslation:  req.UserTranslation,
+		DeepLTranslation: deeplTranslation,
+		OriginalSentence: originalSentence,
+	}, nil
+}
+
 type ScoreBiz struct {
 	scoreStorage     *scorestorage.Storage
 	challengeStorage *challengestorage.Storage
-	translateBiz     *translatebiz.TranslateBiz
+	translateBiz     *TranslateBiz
 }
 
-func NewScoreBiz(scoreStorage *scorestorage.Storage, challengeStorage *challengestorage.Storage, translateBiz *translatebiz.TranslateBiz) *ScoreBiz {
+func NewScoreBiz(scoreStorage *scorestorage.Storage, challengeStorage *challengestorage.Storage, translateBiz *TranslateBiz) *ScoreBiz {
 	return &ScoreBiz{
 		scoreStorage:     scoreStorage,
 		challengeStorage: challengeStorage,
@@ -49,7 +125,7 @@ func (biz *ScoreBiz) SubmitScore(ctx context.Context, userID primitive.ObjectID,
 	}
 
 	// Get DeepL score for user translation
-	scoreRequest := &translatemodel.ScoreRequest{
+	scoreRequest := &scoremodel.ScoreRequest{
 		ChallengeID:     req.ChallengeID,
 		SentenceIndex:   0, // For now, we'll use the first sentence
 		UserTranslation: req.UserTranslation,

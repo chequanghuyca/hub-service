@@ -7,7 +7,6 @@ import (
 	scorebiz "hub-service/module/score/biz"
 	scoremodel "hub-service/module/score/model"
 	"hub-service/module/score/storage"
-	translatebiz "hub-service/module/translate/biz"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +40,7 @@ func GetUserScores(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		store := storage.NewStorage(appCtx.GetDatabase())
 		challengeStore := challengestorage.NewStorage(appCtx.GetDatabase())
-		translateBiz := translatebiz.NewTranslateBiz(appCtx, challengeStore)
+		translateBiz := scorebiz.NewTranslateBiz(appCtx, challengeStore)
 		business := scorebiz.NewScoreBiz(store, challengeStore, translateBiz)
 
 		result, err := business.GetUserScores(c.Request.Context(), userID)

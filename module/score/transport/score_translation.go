@@ -8,8 +8,6 @@ import (
 	scorebiz "hub-service/module/score/biz"
 	scoremodel "hub-service/module/score/model"
 	scorestorage "hub-service/module/score/storage"
-	translatebiz "hub-service/module/translate/biz"
-	translatemodel "hub-service/module/translate/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,20 +17,20 @@ import (
 // ScoreTranslationHandler godoc
 // @Summary Score and save user translation for a challenge
 // @Description Submits a user's translation, gets a score from DeepL, and saves the result.
-// @Tags translate
+// @Tags scores
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body translatemodel.ScoreRequest true "Translation scoring request"
+// @Param request body scoremodel.ScoreRequest true "Translation scoring request"
 // @Success 200 {object} common.Response{data=scoremodel.SubmitScoreResponse} "Success"
 // @Failure 400 {object} common.AppError "Bad request - invalid input"
 // @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 404 {object} common.AppError "Challenge not found"
 // @Failure 500 {object} common.AppError "Internal server error"
-// @Router /api/translate/score [post]
+// @Router /api/scores/translate [post]
 func ScoreTranslationHandler(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req translatemodel.ScoreRequest
+		var req scoremodel.ScoreRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
@@ -51,7 +49,7 @@ func ScoreTranslationHandler(appCtx appctx.AppContext) gin.HandlerFunc {
 		// Create dependencies for score biz
 		scoreStore := scorestorage.NewStorage(appCtx.GetDatabase())
 		challengeStore := challengestorage.NewStorage(appCtx.GetDatabase())
-		translateBusiness := translatebiz.NewTranslateBiz(appCtx, challengeStore)
+		translateBusiness := scorebiz.NewTranslateBiz(appCtx, challengeStore)
 		scoreBusiness := scorebiz.NewScoreBiz(scoreStore, challengeStore, translateBusiness)
 
 		// Prepare request for score submission

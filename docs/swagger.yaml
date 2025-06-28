@@ -725,42 +725,7 @@ paths:
       summary: Send a single email
       tags:
       - email
-  /api/scores/user/{user_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get detailed scores and summary for a specific user
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.GetUserScoresAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/common.AppError'
-      security:
-      - BearerAuth: []
-      summary: Get user's scores for all challenges
-      tags:
-      - scores
-  /api/translate/score:
+  /api/scores/translate:
     post:
       consumes:
       - application/json
@@ -805,7 +770,42 @@ paths:
       - BearerAuth: []
       summary: Score and save user translation for a challenge
       tags:
-      - translate
+      - scores
+  /api/scores/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed scores and summary for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetUserScoresAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user's scores for all challenges
+      tags:
+      - scores
   /api/users/{id}:
     delete:
       consumes:

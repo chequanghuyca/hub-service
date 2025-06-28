@@ -8,6 +8,7 @@ import (
 	"hub-service/core/appctx"
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
+	"hub-service/module/email/service"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
 	hash "hub-service/utils/hash"
@@ -21,6 +22,7 @@ type UserBiz struct {
 	store         *storage.UserStorage
 	hasher        hash.Hasher
 	tokenProvider tokenprovider.Provider
+	emailService  *service.WelcomeEmailService
 }
 
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
@@ -28,6 +30,7 @@ func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
 		store:         storage.NewUserStorage(appCtx),
 		hasher:        hash.NewMd5Hash(),
 		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
+		emailService:  service.NewWelcomeEmailService(),
 	}
 }
 
@@ -62,6 +65,25 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	if err != nil || user == nil {
 		return nil, errors.New("invalid credentials")
 	}
+
+	// Update login status and check if this is first login
+	isFirstLogin, err := biz.store.UpdateLoginStatus(ctx, user.ID)
+	if err != nil {
+		// Log error but don't fail the login
+		// You might want to add proper logging here
+	}
+
+	// Send welcome email if this is the first login
+	if isFirstLogin {
+		go func() {
+			err := biz.emailService.SendWelcomeEmail(user.Name, user.Email)
+			if err != nil {
+				// Log error but don't fail the login
+				// You might want to add proper logging here
+			}
+		}()
+	}
+
 	payload := tokenprovider.TokenPayload{
 		UserID: user.ID,
 		Role:   user.Role,
@@ -238,10 +260,12 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 
 	// 2. Find or create user
 	user, err := biz.store.GetByEmail(ctx, req.Email)
+	isNewUser := false
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
+		// Create new user
 		userCreate := &model.UserCreate{
 			Email:      req.Email,
 			Name:       req.Name,
@@ -254,7 +278,9 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 		if err != nil {
 			return nil, err
 		}
+		isNewUser = true
 	} else {
+		// Update existing user
 		update := false
 		updateData := make(map[string]interface{})
 		if user.Name != req.Name {
@@ -290,6 +316,22 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 				}
 			}
 		}
+
+		// Update login status for existing user
+		_, err = biz.store.UpdateLoginStatus(ctx, user.ID)
+		if err != nil {
+			// Log error but don't fail the login
+		}
+	}
+
+	// Send welcome email if this is a new user
+	if isNewUser {
+		go func() {
+			err := biz.emailService.SendWelcomeEmail(user.Name, user.Email)
+			if err != nil {
+				// Log error but don't fail the login
+			}
+		}()
 	}
 
 	payload := tokenprovider.TokenPayload{

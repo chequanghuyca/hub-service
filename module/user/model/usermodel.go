@@ -7,24 +7,28 @@ import (
 )
 
 type User struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Email      string             `bson:"email" json:"email"`
-	Name       string             `bson:"name" json:"name"`
-	Avatar     string             `bson:"avatar,omitempty" json:"avatar,omitempty"`
-	Role       string             `bson:"role" json:"role"`
-	Provider   string             `bson:"provider,omitempty" json:"provider,omitempty"`
-	ProviderID string             `bson:"provider_id,omitempty" json:"provider_id,omitempty"`
-	CreatedAt  time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt  time.Time          `bson:"updated_at" json:"updated_at"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Email        string             `bson:"email" json:"email"`
+	Name         string             `bson:"name" json:"name"`
+	Avatar       string             `bson:"avatar,omitempty" json:"avatar,omitempty"`
+	Role         string             `bson:"role" json:"role"`
+	Provider     string             `bson:"provider,omitempty" json:"provider,omitempty"`
+	ProviderID   string             `bson:"provider_id,omitempty" json:"provider_id,omitempty"`
+	IsFirstLogin bool               `bson:"is_first_login" json:"is_first_login"`
+	LastLoginAt  *time.Time         `bson:"last_login_at,omitempty" json:"last_login_at,omitempty"`
+	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type UserCreate struct {
-	Email      string `json:"email" binding:"required,email"`
-	Name       string `json:"name" binding:"required"`
-	Avatar     string `json:"avatar"`
-	Role       string `json:"role" binding:"required,oneof=admin client super_admin"`
-	Provider   string `json:"provider,omitempty"`
-	ProviderID string `json:"provider_id,omitempty"`
+	Email        string     `json:"email" binding:"required,email"`
+	Name         string     `json:"name" binding:"required"`
+	Avatar       string     `json:"avatar"`
+	Role         string     `json:"role" binding:"required,oneof=admin client super_admin"`
+	Provider     string     `json:"provider,omitempty"`
+	ProviderID   string     `json:"provider_id,omitempty"`
+	IsFirstLogin bool       `json:"is_first_login"`
+	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
 }
 
 type UserUpdate struct {

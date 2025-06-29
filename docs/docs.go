@@ -2128,6 +2128,11 @@ const docTemplate = `{
                 "role": {
                     "type": "string"
                 },
+                "total_score": {
+                    "description": "Total score from all challenges",
+                    "type": "number",
+                    "example": 95.5
+                },
                 "updated_at": {
                     "type": "string"
                 }

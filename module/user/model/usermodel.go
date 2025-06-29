@@ -36,13 +36,14 @@ type UserUpdate struct {
 }
 
 type UserResponse struct {
-	ID        primitive.ObjectID `json:"id"`
-	Email     string             `json:"email"`
-	Name      string             `json:"name"`
-	Avatar    string             `json:"avatar,omitempty"`
-	Role      string             `json:"role"`
-	CreatedAt time.Time          `json:"created_at"`
-	UpdatedAt time.Time          `json:"updated_at"`
+	ID         primitive.ObjectID `json:"id"`
+	Email      string             `json:"email"`
+	Name       string             `json:"name"`
+	Avatar     string             `json:"avatar,omitempty"`
+	Role       string             `json:"role"`
+	TotalScore float64            `json:"total_score" example:"95.5"` // Total score from all challenges
+	CreatedAt  time.Time          `json:"created_at"`
+	UpdatedAt  time.Time          `json:"updated_at"`
 }
 
 type LoginResponse struct {

@@ -13,7 +13,7 @@ func SingleSendEmailHub(to string, subject string, body string) error {
 	godotenv.Load()
 
 	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", os.Getenv("SYSTEM_EMAIL_TRANSMASTER"))
+	mailer.SetHeader("From", "TransMaster <"+os.Getenv("SYSTEM_EMAIL_TRANSMASTER")+">")
 	mailer.SetHeader("To", to)
 	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", body)

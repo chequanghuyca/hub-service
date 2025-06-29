@@ -32,7 +32,7 @@ func (s *WelcomeEmailService) SendWelcomeEmail(userName, userEmail string) error
 	body := template.GetBodyMailWelcome(emailData)
 
 	// Send email
-	err := storagemail.SingleSendEmail(userEmail, subject, body)
+	err := storagemail.SingleSendEmailHub(userEmail, subject, body)
 	if err != nil {
 		log.Printf("Failed to send welcome email to %s: %v", userEmail, err)
 		return err

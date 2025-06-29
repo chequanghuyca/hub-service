@@ -9,6 +9,8 @@ import (
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
 	"hub-service/module/email/service"
+	scoremodel "hub-service/module/score/model"
+	scorestorage "hub-service/module/score/storage"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
 	hash "hub-service/utils/hash"
@@ -20,6 +22,7 @@ import (
 
 type UserBiz struct {
 	store         *storage.UserStorage
+	scoreStore    *scorestorage.Storage
 	hasher        hash.Hasher
 	tokenProvider tokenprovider.Provider
 	emailService  *service.WelcomeEmailService
@@ -28,6 +31,7 @@ type UserBiz struct {
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
 	return &UserBiz{
 		store:         storage.NewUserStorage(appCtx),
+		scoreStore:    scorestorage.NewStorage(appCtx.GetDatabase()),
 		hasher:        hash.NewMd5Hash(),
 		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
 		emailService:  service.NewWelcomeEmailService(),
@@ -50,13 +54,14 @@ func (biz *UserBiz) CreateUser(ctx context.Context, userCreate *model.UserCreate
 	}
 
 	return &model.UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		Avatar:    user.Avatar,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		Avatar:     user.Avatar,
+		Role:       user.Role,
+		TotalScore: 0, // New user has no score yet
+		CreatedAt:  user.CreatedAt,
+		UpdatedAt:  user.UpdatedAt,
 	}, nil
 }
 
@@ -70,7 +75,6 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	isFirstLogin, err := biz.store.UpdateLoginStatus(ctx, user.ID)
 	if err != nil {
 		// Log error but don't fail the login
-		// You might want to add proper logging here
 	}
 
 	// Send welcome email if this is the first login
@@ -79,7 +83,6 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 			err := biz.emailService.SendWelcomeEmail(user.Name, user.Email)
 			if err != nil {
 				// Log error but don't fail the login
-				// You might want to add proper logging here
 			}
 		}()
 	}
@@ -98,13 +101,14 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 		User: model.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			Avatar:    user.Avatar,
-			Role:      user.Role,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Role:       user.Role,
+			TotalScore: 0, // Will be updated if needed
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
 		},
 	}
 	return loginResponse, nil
@@ -139,13 +143,14 @@ func (biz *UserBiz) RefreshToken(ctx context.Context, refreshToken string) (*mod
 		AccessToken:  newAccessToken,
 		RefreshToken: refreshToken, // Keep the old refresh token
 		User: model.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			Avatar:    user.Avatar,
-			Role:      user.Role,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Role:       user.Role,
+			TotalScore: 0, // Will be updated if needed
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
 		},
 	}
 
@@ -161,14 +166,25 @@ func (biz *UserBiz) GetUserByID(ctx context.Context, id primitive.ObjectID) (*mo
 		return nil, errors.New("user not found")
 	}
 
+	// Get user's total score
+	scoreSummary, err := biz.scoreStore.GetUserScoreSummary(ctx, user.ID)
+	if err != nil {
+		// If error getting score, set to 0 but don't fail the request
+		scoreSummary = &scoremodel.UserScoreSummary{
+			UserID:     user.ID,
+			TotalScore: 0,
+		}
+	}
+
 	return &model.UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		Avatar:    user.Avatar,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		Avatar:     user.Avatar,
+		Role:       user.Role,
+		TotalScore: scoreSummary.TotalScore,
+		CreatedAt:  user.CreatedAt,
+		UpdatedAt:  user.UpdatedAt,
 	}, nil
 }
 
@@ -178,14 +194,25 @@ func (biz *UserBiz) UpdateUser(ctx context.Context, id primitive.ObjectID, userU
 		return nil, err
 	}
 
+	// Get user's total score
+	scoreSummary, err := biz.scoreStore.GetUserScoreSummary(ctx, user.ID)
+	if err != nil {
+		// If error getting score, set to 0 but don't fail the request
+		scoreSummary = &scoremodel.UserScoreSummary{
+			UserID:     user.ID,
+			TotalScore: 0,
+		}
+	}
+
 	return &model.UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		Avatar:    user.Avatar,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		Avatar:     user.Avatar,
+		Role:       user.Role,
+		TotalScore: scoreSummary.TotalScore,
+		CreatedAt:  user.CreatedAt,
+		UpdatedAt:  user.UpdatedAt,
 	}, nil
 }
 
@@ -208,14 +235,25 @@ func (biz *UserBiz) ListUsers(ctx context.Context, page, limit int64, sortBy, so
 
 	var responses []model.UserResponse
 	for _, user := range users {
+		// Get user's total score
+		scoreSummary, err := biz.scoreStore.GetUserScoreSummary(ctx, user.ID)
+		if err != nil {
+			// If error getting score, set to 0 but don't fail the request
+			scoreSummary = &scoremodel.UserScoreSummary{
+				UserID:     user.ID,
+				TotalScore: 0,
+			}
+		}
+
 		responses = append(responses, model.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			Avatar:    user.Avatar,
-			Role:      user.Role,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Role:       user.Role,
+			TotalScore: scoreSummary.TotalScore,
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
 		})
 	}
 
@@ -346,13 +384,14 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 		User: model.UserResponse{
-			ID:        user.ID,
-			Email:     user.Email,
-			Name:      user.Name,
-			Avatar:    user.Avatar,
-			Role:      user.Role,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Role:       user.Role,
+			TotalScore: 0, // New user or will be updated if needed
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
 		},
 	}
 	return loginResponse, nil

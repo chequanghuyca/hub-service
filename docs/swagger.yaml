@@ -498,6 +498,10 @@ definitions:
         type: string
       role:
         type: string
+      total_score:
+        description: Total score from all challenges
+        example: 95.5
+        type: number
       updated_at:
         type: string
     type: object

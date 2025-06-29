@@ -5,9 +5,9 @@ services:
         container_name: hub-service-mongodb
         restart: unless-stopped
         environment:
-            MONGO_INITDB_ROOT_USERNAME: admin
-            MONGO_INITDB_ROOT_PASSWORD: password123
-            MONGO_INITDB_DATABASE: hub_service
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+            MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-hub_service}
         ports:
             - '27017:27017'
         volumes:
@@ -28,30 +28,40 @@ services:
         container_name: hub-service-app
         restart: unless-stopped
         ports:
-            - '8080:8080'
+            - '${PORT:-8080}:8080'
         environment:
             # App Configuration
-            SYSTEM_APP_NAME: Hub Service
-            SYSTEM_SECRET_KEY: your-super-secret-key-here-change-this-in-production
+            SYSTEM_APP_NAME: ${SYSTEM_APP_NAME:-Hub Service}
+            SYSTEM_SECRET_KEY: ${SYSTEM_SECRET_KEY:-your-super-secret-key-here-change-this-in-production}
             PORT: 8080
 
             # MongoDB Configuration
-            SYSTEM_MONGODB_URI: mongodb://admin:password123@mongodb:27017/hub_service?authSource=admin
+            SYSTEM_MONGODB_URI: ${MONGO_URI:-mongodb://admin:password123@mongodb:27017/hub_service?authSource=admin}
 
-            # Email Configuration (update with your values)
-            SYSTEM_EMAIL_SERVER: smtp.gmail.com
-            SYSTEM_EMAIL: your-email@gmail.com
-            SYSTEM_EMAIL_HOST: smtp.gmail.com
-            SYSTEM_EMAIL_PORT: 587
-            SYSTEM_PHONE_NUMBER: +1234567890
+            # Email Configuration
+            SYSTEM_EMAIL_SERVER: ${SYSTEM_EMAIL_SERVER:-smtp.gmail.com}
+            SYSTEM_EMAIL_SERVER_TRANSMASTER: ${SYSTEM_EMAIL_SERVER_TRANSMASTER:-smtp.gmail.com}
+            SYSTEM_EMAIL: ${SYSTEM_EMAIL:-your-email@gmail.com}
+            SYSTEM_EMAIL_TRANSMASTER: ${SYSTEM_EMAIL_TRANSMASTER:-your-email@gmail.com}
+            SYSTEM_EMAIL_HOST: ${SYSTEM_EMAIL_HOST:-smtp.gmail.com}
+            SYSTEM_EMAIL_PORT: ${SYSTEM_EMAIL_PORT:-587}
+            SYSTEM_EMAIL_PASSWORD: ${SYSTEM_EMAIL_PASSWORD:-}
+            SYSTEM_PHONE_NUMBER: ${SYSTEM_PHONE_NUMBER:-+1234567890}
 
-            # DeepL Configuration (update with your API key)
-            SYSTEM_DEEPL_API_KEY: your-deepl-api-key
-            SYSTEM_DEEPL_BASE_URL: https://api-free.deepl.com/v2
+            # DeepL Configuration
+            SYSTEM_DEEPL_API_KEY: ${SYSTEM_DEEPL_API_KEY:-your-deepl-api-key}
+            SYSTEM_DEEPL_BASE_URL: ${SYSTEM_DEEPL_BASE_URL:-https://api-free.deepl.com/v2}
+
+            # Google social Login OAuth2
+            SYSTEM_GOOGLE_AUTHENTICATOR: ${SYSTEM_GOOGLE_AUTHENTICATOR:-your-google-authenticator-client-id}
+            SYSTEM_GOOGLE_CLIENT_SECRET: ${SYSTEM_GOOGLE_CLIENT_SECRET:-}
 
             # Portfolio URLs
-            BASE_URL_PORTFOLIO: https://your-portfolio.com
-            BASE_URL_LOCAL: http://localhost:3000
+            BASE_URL_PORTFOLIO: ${BASE_URL_PORTFOLIO:-https://your-portfolio.com}
+            BASE_URL_LOCAL: ${BASE_URL_LOCAL:-http://localhost:3000}
+            BASE_URL_DEV: ${BASE_URL_DEV:-http://localhost:3000}
+            BASE_URL_TRANSMASTER_PROD: ${BASE_URL_TRANSMASTER_PROD:-}
+
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -72,11 +82,11 @@ services:
         ports:
             - '8081:8081'
         environment:
-            ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-            ME_CONFIG_MONGODB_ADMINPASSWORD: password123
-            ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
-            ME_CONFIG_BASICAUTH_USERNAME: admin
-            ME_CONFIG_BASICAUTH_PASSWORD: password123
+            ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME:-admin}
+            ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+            ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/
+            ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME:-admin}
+            ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-password123}
         depends_on:
             mongodb:
                 condition: service_healthy

@@ -3,20 +3,18 @@ package template
 import "strings"
 
 var bodyMailWelcome = `
-	<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-		<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-			<h1 style="margin: 0; font-size: 28px;">🎉 Welcome to TransMaster!</h1>
+	<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
+		<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 12px; text-align: center; border-radius: 10px 10px 0 0;">
+			<h1 style="margin: 0; font-size: 28px;">🎉 Hello {{name}},</h1>
 		</div>
 		
-		<div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
-			<p style="font-size: 18px; color: #333; margin-bottom: 20px;"><strong>Hello {{name}},</strong></p>
-			
+		<div style="background: #f8f9fa; padding: 30px 15px; border-radius: 0 0 10px 10px;">
 			<p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px;">
 				Thank you for joining our learning community! 
 				We're excited to welcome you to our advanced language learning platform.
 			</p>
 			
-			<div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
+			<div style="background: white; padding: 20px 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #667eea;">
 				<h3 style="color: #667eea; margin-top: 0;">🚀 What you can do:</h3>
 				<ul style="color: #555; line-height: 1.8;">
 					<li>Participate in exciting translation challenges</li>

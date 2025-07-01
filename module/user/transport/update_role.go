@@ -21,7 +21,7 @@ import (
 // @Success 200 {object} model.UpdateUserResponse
 // @Failure 400 {object} model.ErrorResponse
 // @Failure 403 {object} model.ErrorResponse
-// @Router /api/users/role [put]
+// @Router /api/users/set-role [patch]
 func UpdateUserRole(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {

@@ -19,9 +19,9 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
 			protected.GET("/:id", GetUserByID(appCtx))
-			protected.PUT("/:id", UpdateUser(appCtx))
+			protected.PATCH("/:id", UpdateUser(appCtx))
 			protected.DELETE("/:id", auth.RequireRoles(common.RoleSuperAdmin, common.RoleAdmin), DeleteUser(appCtx))
-			protected.PUT("/role", auth.RequireRoles(common.RoleSuperAdmin), UpdateUserRole(appCtx))
+			protected.PATCH("/set-role", auth.RequireRoles(common.RoleSuperAdmin), UpdateUserRole(appCtx))
 		}
 	}
 }

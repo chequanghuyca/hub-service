@@ -1211,7 +1211,7 @@ paths:
       summary: Get user by ID
       tags:
       - users
-    put:
+    patch:
       consumes:
       - application/json
       description: Update user information
@@ -1334,8 +1334,8 @@ paths:
       summary: Refresh access token
       tags:
       - users
-  /api/users/role:
-    put:
+  /api/users/set-role:
+    patch:
       consumes:
       - application/json
       description: Update role of a user (super_admin only)

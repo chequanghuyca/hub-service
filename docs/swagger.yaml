@@ -907,52 +907,6 @@ paths:
       summary: Get user's scores for all challenges
       tags:
       - scores
-  /api/sections:
-    post:
-      consumes:
-      - application/json
-      description: Create a new section for a challenge. Only admin and super_admin
-        can access this endpoint.
-      parameters:
-      - description: Section data
-        in: body
-        name: section
-        required: true
-        schema:
-          $ref: '#/definitions/model.SectionCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully created. Returns the ID of the new section.
-          schema:
-            allOf:
-            - $ref: '#/definitions/common.Response'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "403":
-          description: Forbidden - Only admin and super_admin can access
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/common.AppError'
-      security:
-      - BearerAuth: []
-      summary: Create a new section
-      tags:
-      - sections
   /api/sections/{id}:
     delete:
       consumes:
@@ -1100,6 +1054,52 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a section
+      tags:
+      - sections
+  /api/sections/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new section for a challenge. Only admin and super_admin
+        can access this endpoint.
+      parameters:
+      - description: Section data
+        in: body
+        name: section
+        required: true
+        schema:
+          $ref: '#/definitions/model.SectionCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created. Returns the ID of the new section.
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new section
       tags:
       - sections
   /api/sections/list:

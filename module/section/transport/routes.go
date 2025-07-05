@@ -25,7 +25,7 @@ func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 		adminProtected.Use(auth.RequireRoles(common.RoleAdmin, common.RoleSuperAdmin))
 		{
 			adminProtected.PATCH("/:id", UpdateSection(appCtx))
-			adminProtected.POST("", CreateSection(appCtx))
+			adminProtected.POST("/create", CreateSection(appCtx))
 			adminProtected.DELETE("/:id", DeleteSection(appCtx))
 		}
 	}

@@ -638,7 +638,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/sections": {
+        "/api/sections/create": {
             "post": {
                 "security": [
                     {

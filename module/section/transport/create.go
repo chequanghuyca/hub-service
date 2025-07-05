@@ -24,7 +24,7 @@ import (
 // @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 403 {object} common.AppError "Forbidden - Only admin and super_admin can access"
 // @Failure 500 {object} common.AppError "Internal server error"
-// @Router /api/sections [post]
+// @Router /api/sections/create [post]
 func CreateSection(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var section model.SectionCreate

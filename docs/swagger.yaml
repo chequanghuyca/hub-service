@@ -399,6 +399,14 @@ definitions:
       title:
         type: string
     type: object
+  model.SectionSimple:
+    description: Simplified section containing only id and title for list operations
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+    type: object
   model.SectionUpdate:
     description: Optional fields for updating a section.
     properties:
@@ -1156,6 +1164,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a list of sections with pagination, search and user scores
+      tags:
+      - sections
+  /api/sections/simple:
+    get:
+      consumes:
+      - application/json
+      description: Get all sections with only id and title, optionally filtered by
+        title search. No pagination. All authenticated users can access this endpoint.
+      parameters:
+      - description: Search by section title (case-insensitive)
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SectionSimple'
+                  type: array
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get all sections with only id and title
       tags:
       - sections
   /api/users/{id}:

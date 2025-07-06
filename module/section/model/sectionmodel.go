@@ -98,6 +98,13 @@ type SectionWithScore struct {
 	UserScore *UserScoreSummary `json:"user_score,omitempty"`
 }
 
+// SectionSimple represents a simplified section with only id and title
+// @Description Simplified section containing only id and title for list operations
+type SectionSimple struct {
+	ID    primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Title string             `json:"title" bson:"title"`
+}
+
 // Challenge represents a challenge (imported from challenge module)
 type Challenge struct {
 	ID         primitive.ObjectID `json:"id" bson:"_id,omitempty"`

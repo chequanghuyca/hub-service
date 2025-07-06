@@ -16,6 +16,7 @@ func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
 			protected.GET("/list", ListSection(appCtx))
+			protected.GET("/simple", ListSimpleSection(appCtx))
 			protected.GET("/:id", GetSection(appCtx))
 		}
 

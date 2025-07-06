@@ -720,7 +720,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a list of sections with pagination and user scores. All authenticated users can access this endpoint.",
+                "description": "Get a list of sections with pagination, search by title and user scores. All authenticated users can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -730,7 +730,7 @@ const docTemplate = `{
                 "tags": [
                     "sections"
                 ],
-                "summary": "Get a list of sections with pagination and user scores",
+                "summary": "Get a list of sections with pagination, search and user scores",
                 "parameters": [
                     {
                         "type": "integer",
@@ -742,6 +742,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Number of items per page (default: 10)",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by section title (case-insensitive)",
+                        "name": "title",
                         "in": "query"
                     }
                 ],

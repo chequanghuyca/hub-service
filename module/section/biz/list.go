@@ -9,7 +9,7 @@ import (
 )
 
 type ListSectionStore interface {
-	List(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, moreKeys ...string) ([]model.SectionWithScore, error)
+	List(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, title string, moreKeys ...string) ([]model.SectionWithScore, error)
 }
 
 type listSectionBiz struct {
@@ -20,6 +20,6 @@ func NewListSectionBiz(store ListSectionStore) *listSectionBiz {
 	return &listSectionBiz{store: store}
 }
 
-func (biz *listSectionBiz) ListSection(ctx context.Context, paging *common.Paging, userID primitive.ObjectID) ([]model.SectionWithScore, error) {
-	return biz.store.List(ctx, paging, userID)
+func (biz *listSectionBiz) ListSection(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, title string) ([]model.SectionWithScore, error) {
+	return biz.store.List(ctx, paging, userID, title)
 }

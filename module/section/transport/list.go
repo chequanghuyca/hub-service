@@ -12,14 +12,15 @@ import (
 )
 
 // ListSection godoc
-// @Summary Get a list of sections with pagination and user scores
-// @Description Get a list of sections with pagination and user scores. All authenticated users can access this endpoint.
+// @Summary Get a list of sections with pagination, search and user scores
+// @Description Get a list of sections with pagination, search by title and user scores. All authenticated users can access this endpoint.
 // @Tags sections
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param page query int false "Page number (default: 1)"
 // @Param limit query int false "Number of items per page (default: 10)"
+// @Param title query string false "Search by section title (case-insensitive)"
 // @Success 200 {object} common.Response{data=[]model.SectionWithScore,meta=common.Paging} "Success"
 // @Failure 400 {object} common.AppError "Bad request"
 // @Failure 401 {object} common.AppError "Unauthorized"
@@ -33,13 +34,16 @@ func ListSection(appCtx appctx.AppContext) gin.HandlerFunc {
 		}
 		paging.Fulfill()
 
+		// Get search title from query parameter
+		title := c.Query("title")
+
 		// Get user ID from context
 		userID := c.MustGet("user_id").(primitive.ObjectID)
 
 		store := storage.NewStorage(appCtx.GetDatabase())
 		business := biz.NewListSectionBiz(store)
 
-		result, err := business.ListSection(c.Request.Context(), &paging, userID)
+		result, err := business.ListSection(c.Request.Context(), &paging, userID, title)
 		if err != nil {
 			panic(err)
 		}

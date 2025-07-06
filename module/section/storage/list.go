@@ -11,9 +11,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (s *Storage) List(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, moreKeys ...string) ([]model.SectionWithScore, error) {
+func (s *Storage) List(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, title string, moreKeys ...string) ([]model.SectionWithScore, error) {
 	var sections []model.Section
 	collection := s.db.MongoDB.GetCollection(model.SectionName)
+
+	// Build filter query
+	filter := bson.M{}
+
+	// Add title search if provided
+	if title != "" {
+		filter["title"] = bson.M{
+			"$regex":   title,
+			"$options": "i", // Case-insensitive search
+		}
+	}
 
 	// Paging
 	findOptions := options.Find()
@@ -23,7 +34,7 @@ func (s *Storage) List(ctx context.Context, paging *common.Paging, userID primit
 	// Sorting
 	findOptions.SetSort(bson.D{{Key: "created_at", Value: -1}})
 
-	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
+	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +74,8 @@ func (s *Storage) List(ctx context.Context, paging *common.Paging, userID primit
 		})
 	}
 
-	// Total count for paging
-	total, err := collection.CountDocuments(ctx, bson.M{})
+	// Total count for paging with same filter
+	total, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, err
 	}

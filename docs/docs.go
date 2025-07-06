@@ -97,7 +97,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a list of translation challenges with pagination. All authenticated users can access this endpoint.",
+                "description": "Get a list of translation challenges with pagination and search. All authenticated users can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -127,6 +127,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by section ID",
                         "name": "section_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search in title and content (case-insensitive)",
+                        "name": "search",
                         "in": "query"
                     }
                 ],

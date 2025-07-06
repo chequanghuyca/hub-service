@@ -710,8 +710,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a list of translation challenges with pagination. All authenticated
-        users can access this endpoint.
+      description: Get a list of translation challenges with pagination and search.
+        All authenticated users can access this endpoint.
       parameters:
       - default: 1
         description: Page number
@@ -726,6 +726,10 @@ paths:
       - description: Filter by section ID
         in: query
         name: section_id
+        type: string
+      - description: Search in title and content (case-insensitive)
+        in: query
+        name: search
         type: string
       produces:
       - application/json

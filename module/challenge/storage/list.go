@@ -13,6 +13,8 @@ import (
 func (s *Storage) List(
 	ctx context.Context,
 	paging *common.Paging,
+	sectionID string,
+	search string,
 	moreKeys ...string) ([]model.Challenge, error) {
 	var result []model.Challenge
 	collection := s.db.MongoDB.GetCollection(model.CollectionName)
@@ -21,10 +23,22 @@ func (s *Storage) List(
 	filter := bson.M{}
 
 	// Add SectionID filter if provided
-	if len(moreKeys) > 0 && moreKeys[0] != "" {
-		sectionID, err := primitive.ObjectIDFromHex(moreKeys[0])
+	if sectionID != "" {
+		sectionObjID, err := primitive.ObjectIDFromHex(sectionID)
 		if err == nil {
-			filter["section_id"] = sectionID
+			filter["section_id"] = sectionObjID
+		}
+	}
+
+	// Add search filter if provided
+	if search != "" {
+		searchRegex := bson.M{
+			"$regex":   search,
+			"$options": "i", // Case-insensitive search
+		}
+		filter["$or"] = []bson.M{
+			{"title": searchRegex},
+			{"content": searchRegex},
 		}
 	}
 
@@ -46,7 +60,7 @@ func (s *Storage) List(
 		return nil, err
 	}
 
-	// Total count for paging
+	// Total count for paging with same filter
 	total, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, err

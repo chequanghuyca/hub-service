@@ -803,6 +803,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/sections/simple": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all sections with only id and title, optionally filtered by title search. No pagination. All authenticated users can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sections"
+                ],
+                "summary": "Get all sections with only id and title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by section title (case-insensitive)",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.SectionSimple"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/sections/{id}": {
             "get": {
                 "security": [
@@ -1985,6 +2054,18 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SectionSimple": {
+            "description": "Simplified section containing only id and title for list operations",
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 },
                 "title": {

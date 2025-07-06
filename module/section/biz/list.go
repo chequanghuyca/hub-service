@@ -23,3 +23,19 @@ func NewListSectionBiz(store ListSectionStore) *listSectionBiz {
 func (biz *listSectionBiz) ListSection(ctx context.Context, paging *common.Paging, userID primitive.ObjectID, title string) ([]model.SectionWithScore, error) {
 	return biz.store.List(ctx, paging, userID, title)
 }
+
+type ListSimpleSectionStore interface {
+	ListSimple(ctx context.Context, title string) ([]model.SectionSimple, error)
+}
+
+type listSimpleSectionBiz struct {
+	store ListSimpleSectionStore
+}
+
+func NewListSimpleSectionBiz(store ListSimpleSectionStore) *listSimpleSectionBiz {
+	return &listSimpleSectionBiz{store: store}
+}
+
+func (biz *listSimpleSectionBiz) ListSimpleSection(ctx context.Context, title string) ([]model.SectionSimple, error) {
+	return biz.store.ListSimple(ctx, title)
+}

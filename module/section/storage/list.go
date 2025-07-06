@@ -83,3 +83,43 @@ func (s *Storage) List(ctx context.Context, paging *common.Paging, userID primit
 
 	return result, nil
 }
+
+// ListSimple returns all sections with only id and title, optionally filtered by title
+func (s *Storage) ListSimple(ctx context.Context, title string) ([]model.SectionSimple, error) {
+	var result []model.SectionSimple
+	collection := s.db.MongoDB.GetCollection(model.SectionName)
+
+	// Build filter query
+	filter := bson.M{}
+
+	// Add title search if provided
+	if title != "" {
+		filter["title"] = bson.M{
+			"$regex":   title,
+			"$options": "i", // Case-insensitive search
+		}
+	}
+
+	// Only select id and title fields
+	projection := bson.M{
+		"_id":   1,
+		"title": 1,
+	}
+
+	// Sorting by created_at desc
+	findOptions := options.Find()
+	findOptions.SetProjection(projection)
+	findOptions.SetSort(bson.D{{Key: "created_at", Value: -1}})
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

@@ -180,18 +180,6 @@ definitions:
     description: Required fields for creating a new translation challenge.
     properties:
       category:
-        enum:
-        - work
-        - life
-        - travel
-        - daily_life
-        - entertainment
-        - education
-        - economy
-        - health
-        - sport
-        - technology
-        - culture
         example: work
         type: string
       content:
@@ -217,7 +205,6 @@ definitions:
         example: Greetings
         type: string
     required:
-    - category
     - content
     - difficulty
     - source_lang
@@ -248,18 +235,6 @@ definitions:
       are optional.
     properties:
       category:
-        enum:
-        - work
-        - life
-        - travel
-        - daily_life
-        - entertainment
-        - education
-        - economy
-        - health
-        - sport
-        - technology
-        - culture
         example: work
         type: string
       content:

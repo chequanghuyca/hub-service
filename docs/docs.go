@@ -1754,7 +1754,6 @@ const docTemplate = `{
             "description": "Required fields for creating a new translation challenge.",
             "type": "object",
             "required": [
-                "category",
                 "content",
                 "difficulty",
                 "source_lang",
@@ -1764,19 +1763,6 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "type": "string",
-                    "enum": [
-                        "work",
-                        "life",
-                        "travel",
-                        "daily_life",
-                        "entertainment",
-                        "education",
-                        "economy",
-                        "health",
-                        "sport",
-                        "technology",
-                        "culture"
-                    ],
                     "example": "work"
                 },
                 "content": {
@@ -1845,19 +1831,6 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "type": "string",
-                    "enum": [
-                        "work",
-                        "life",
-                        "travel",
-                        "daily_life",
-                        "entertainment",
-                        "education",
-                        "economy",
-                        "health",
-                        "sport",
-                        "technology",
-                        "culture"
-                    ],
                     "example": "work"
                 },
                 "content": {

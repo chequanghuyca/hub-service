@@ -525,52 +525,6 @@ info:
   title: Hub Service API
   version: "1.0"
 paths:
-  /api/challenges:
-    post:
-      consumes:
-      - application/json
-      description: Create a new translation challenge and store it in the database.
-        Only admin and super_admin can access this endpoint.
-      parameters:
-      - description: Challenge data to create
-        in: body
-        name: challenge
-        required: true
-        schema:
-          $ref: '#/definitions/model.ChallengeCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully created. Returns the ID of the new challenge.
-          schema:
-            allOf:
-            - $ref: '#/definitions/common.Response'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "403":
-          description: Forbidden - Only admin and super_admin can access
-          schema:
-            $ref: '#/definitions/common.AppError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/common.AppError'
-      security:
-      - BearerAuth: []
-      summary: Create a new challenge
-      tags:
-      - challenges
   /api/challenges/{id}:
     delete:
       consumes:
@@ -712,6 +666,52 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a challenge
+      tags:
+      - challenges
+  /api/challenges/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new translation challenge and store it in the database.
+        Only admin and super_admin can access this endpoint.
+      parameters:
+      - description: Challenge data to create
+        in: body
+        name: challenge
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChallengeCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created. Returns the ID of the new challenge.
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new challenge
       tags:
       - challenges
   /api/challenges/list:

@@ -24,7 +24,7 @@ func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 		adminProtected.Use(auth.AuthMiddleware(appCtx))
 		adminProtected.Use(auth.RequireRoles(common.RoleAdmin, common.RoleSuperAdmin))
 		{
-			adminProtected.POST("", CreateChallenge(appCtx))
+			adminProtected.POST("/create", CreateChallenge(appCtx))
 			adminProtected.PATCH("/:id", UpdateChallenge(appCtx))
 			adminProtected.DELETE("/:id", DeleteChallenge(appCtx))
 		}

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/challenges": {
+        "/api/challenges/create": {
             "post": {
                 "security": [
                     {

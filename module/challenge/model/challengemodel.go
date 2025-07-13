@@ -14,24 +14,11 @@ const (
 	DifficultyEasy   = "easy"
 	DifficultyMedium = "medium"
 	DifficultyHard   = "hard"
-
-	CategoryWork          = "work"
-	CategoryLife          = "life"
-	CategoryTravel        = "travel"
-	CategoryDailyLife     = "daily_life"
-	CategoryEntertainment = "entertainment"
-	CategoryEducation     = "education"
-	CategoryEconomy       = "economy"
-	CategoryHealth        = "health"
-	CategorySport         = "sport"
-	CategoryTechnology    = "technology"
-	CategoryCulture       = "culture"
 )
 
 // Validation error constants
 var (
 	ErrInvalidDifficulty = errors.New("invalid difficulty value")
-	ErrInvalidCategory   = errors.New("invalid category value")
 )
 
 // Challenge represents a translation challenge stored in the database.
@@ -100,28 +87,7 @@ func GetDifficultyValidation() string {
 	return "oneof=" + DifficultyEasy + " " + DifficultyMedium + " " + DifficultyHard
 }
 
-func GetCategoryValidation() string {
-	categories := GetValidCategories()
-	result := "oneof="
-	for i, category := range categories {
-		if i > 0 {
-			result += " "
-		}
-		result += category
-	}
-	return result
-}
-
 // GetValidDifficulties returns all valid difficulty values
 func GetValidDifficulties() []string {
 	return []string{DifficultyEasy, DifficultyMedium, DifficultyHard}
-}
-
-// GetValidCategories returns all valid category values
-func GetValidCategories() []string {
-	return []string{
-		CategoryWork, CategoryLife, CategoryTravel, CategoryDailyLife,
-		CategoryEntertainment, CategoryEducation, CategoryEconomy,
-		CategoryHealth, CategorySport, CategoryTechnology, CategoryCulture,
-	}
 }

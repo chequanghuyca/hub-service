@@ -47,6 +47,5 @@ func CreateChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 func GetChallengeExamples() map[string]interface{} {
 	return map[string]interface{}{
 		"difficulty": model.GetValidDifficulties(),
-		"category":   model.GetValidCategories(),
 	}
 }

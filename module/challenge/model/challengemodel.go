@@ -62,7 +62,7 @@ type ChallengeCreate struct {
 	SourceLang string             `json:"source_lang" bson:"source_lang" binding:"required" example:"VI"`
 	TargetLang string             `json:"target_lang" bson:"target_lang" binding:"required" example:"EN"`
 	Difficulty string             `json:"difficulty" bson:"difficulty" binding:"required,oneof=easy medium hard" example:"easy"`
-	Category   string             `json:"category" bson:"category" example:"work"`
+	Category   string             `json:"category" bson:"category" binding:"omitempty" example:"work"`
 	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id" example:"62b4c3789196e8a159933552"`
 	CreatedAt  *time.Time         `json:"-" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"-" bson:"updated_at"`
@@ -101,10 +101,15 @@ func GetDifficultyValidation() string {
 }
 
 func GetCategoryValidation() string {
-	return "oneof=" + CategoryWork + " " + CategoryLife + " " + CategoryTravel + " " +
-		CategoryDailyLife + " " + CategoryEntertainment + " " + CategoryEducation + " " +
-		CategoryEconomy + " " + CategoryHealth + " " + CategorySport + " " +
-		CategoryTechnology + " " + CategoryCulture
+	categories := GetValidCategories()
+	result := "oneof="
+	for i, category := range categories {
+		if i > 0 {
+			result += " "
+		}
+		result += category
+	}
+	return result
 }
 
 // GetValidDifficulties returns all valid difficulty values

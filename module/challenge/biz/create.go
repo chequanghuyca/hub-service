@@ -24,10 +24,6 @@ func (biz *createChallengeBiz) CreateChallenge(ctx context.Context, data *model.
 		return err
 	}
 
-	if err := biz.validateCategory(data.Category); err != nil {
-		return err
-	}
-
 	if err := biz.store.Create(ctx, data); err != nil {
 		return err
 	}
@@ -38,14 +34,6 @@ func (biz *createChallengeBiz) CreateChallenge(ctx context.Context, data *model.
 func (biz *createChallengeBiz) validateDifficulty(difficulty string) error {
 	if !slices.Contains(model.GetValidDifficulties(), difficulty) {
 		return model.ErrInvalidDifficulty
-	}
-	return nil
-}
-
-// validateCategory validates category using constants
-func (biz *createChallengeBiz) validateCategory(category string) error {
-	if !slices.Contains(model.GetValidCategories(), category) {
-		return model.ErrInvalidCategory
 	}
 	return nil
 }

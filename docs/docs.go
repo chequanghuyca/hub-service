@@ -2283,6 +2283,9 @@ const docTemplate = `{
         "model.UserUpdate": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }

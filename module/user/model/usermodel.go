@@ -32,7 +32,8 @@ type UserCreate struct {
 }
 
 type UserUpdate struct {
-	Name string `json:"name,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 }
 
 type UserResponse struct {

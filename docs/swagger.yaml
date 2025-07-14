@@ -496,6 +496,8 @@ definitions:
     type: object
   model.UserUpdate:
     properties:
+      avatar:
+        type: string
       name:
         type: string
     type: object

@@ -1698,6 +1698,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "62b4c3789196e8a159933552"
                 },
+                "image": {
+                    "type": "string"
+                },
                 "section_id": {
                     "type": "string",
                     "example": "62b4c3789196e8a159933552"
@@ -1845,6 +1848,9 @@ const docTemplate = `{
                     ],
                     "example": "easy"
                 },
+                "image": {
+                    "type": "string"
+                },
                 "section_id": {
                     "type": "string",
                     "example": "62b4c3789196e8a159933552"
@@ -1913,6 +1919,9 @@ const docTemplate = `{
                         "hard"
                     ],
                     "example": "easy"
+                },
+                "image": {
+                    "type": "string"
                 },
                 "section_id": {
                     "type": "string",

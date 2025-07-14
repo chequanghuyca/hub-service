@@ -2081,6 +2081,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "image": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -2094,6 +2097,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "content": {
+                    "type": "string"
+                },
+                "image": {
                     "type": "string"
                 },
                 "title": {
@@ -2118,6 +2124,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "content": {
+                    "type": "string"
+                },
+                "image": {
                     "type": "string"
                 },
                 "title": {

@@ -22,6 +22,7 @@ type Section struct {
 	Content   string             `json:"content" bson:"content"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
+	Image     string             `json:"image" bson:"image"`
 }
 
 func (Section) TableName() string {
@@ -36,6 +37,7 @@ type SectionCreate struct {
 	Content   string             `json:"content" bson:"content"`
 	CreatedAt *time.Time         `json:"-" bson:"created_at"`
 	UpdatedAt *time.Time         `json:"-" bson:"updated_at"`
+	Image     string             `json:"image" bson:"image"`
 }
 
 func (SectionCreate) TableName() string {
@@ -48,6 +50,7 @@ type SectionUpdate struct {
 	Title     *string    `json:"title,omitempty" bson:"title,omitempty"`
 	Content   *string    `json:"content,omitempty" bson:"content,omitempty"`
 	UpdatedAt *time.Time `json:"-" bson:"updated_at,omitempty"`
+	Image     *string    `json:"image,omitempty" bson:"image,omitempty"`
 }
 
 type SectionCreateResponse struct {

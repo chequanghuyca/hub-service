@@ -361,6 +361,8 @@ definitions:
         type: string
       id:
         type: string
+      image:
+        type: string
       title:
         type: string
       updated_at:
@@ -370,6 +372,8 @@ definitions:
     description: Required fields for creating a new section.
     properties:
       content:
+        type: string
+      image:
         type: string
       title:
         type: string
@@ -386,6 +390,8 @@ definitions:
     description: Optional fields for updating a section.
     properties:
       content:
+        type: string
+      image:
         type: string
       title:
         type: string

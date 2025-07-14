@@ -70,3 +70,15 @@ func (s *Storage) GetSectionOnly(ctx context.Context, id primitive.ObjectID) (*m
 
 	return &section, nil
 }
+
+func (s *Storage) GetSection(ctx context.Context, id primitive.ObjectID) (*model.Section, error) {
+	var section model.Section
+
+	collection := s.db.MongoDB.GetCollection(model.SectionName)
+	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&section)
+	if err != nil {
+		return nil, err
+	}
+
+	return &section, nil
+}

@@ -5,6 +5,8 @@ import (
 	"hub-service/core/appctx"
 	"hub-service/module/section/biz"
 	"hub-service/module/section/storage"
+	"hub-service/module/upload/service"
+	"hub-service/utils/helper"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,22 +30,33 @@ import (
 // @Router /api/sections/{id} [delete]
 func DeleteSection(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get section ID from URL parameter
-		sectionIDStr := c.Param("id")
-
-		// Validate and convert section ID
-		sectionID, err := primitive.ObjectIDFromHex(sectionIDStr)
+		id, err := primitive.ObjectIDFromHex(c.Param("id"))
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
 		store := storage.NewStorage(appCtx.GetDatabase())
-		business := biz.NewDeleteSectionBiz(store)
 
-		if err := business.DeleteSection(c.Request.Context(), sectionID); err != nil {
+		section, err := store.GetSection(c.Request.Context(), id)
+		if err != nil {
 			panic(err)
 		}
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse("Section deleted successfully"))
+		if section.Image != "" {
+			oldFileName := helper.ExtractFileNameFromURL(section.Image)
+			if oldFileName != "" {
+				r2Service, err := service.NewR2Service()
+				if err == nil {
+					_ = r2Service.DeleteFile(oldFileName)
+				}
+			}
+		}
+
+		business := biz.NewDeleteSectionBiz(store)
+		if err := business.DeleteSection(c.Request.Context(), id); err != nil {
+			panic(err)
+		}
+
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
 	}
 }

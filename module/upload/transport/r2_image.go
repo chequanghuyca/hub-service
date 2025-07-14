@@ -26,12 +26,14 @@ func UploadR2Image(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		file, err := c.FormFile("file")
 		if err != nil {
-			panic(common.ErrInvalidRequest(err))
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
+			return
 		}
 
 		url, err := service.UploadToR2(file)
 		if err != nil {
-			panic(common.ErrInvalidRequest(err))
+			c.JSON(http.StatusInternalServerError, common.ErrInvalidRequest(err))
+			return
 		}
 
 		c.JSON(http.StatusOK, common.SimpleSuccessResponse(url))

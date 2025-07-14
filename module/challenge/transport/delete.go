@@ -5,6 +5,8 @@ import (
 	"hub-service/core/appctx"
 	"hub-service/module/challenge/biz"
 	"hub-service/module/challenge/storage"
+	"hub-service/module/upload/service"
+	"hub-service/utils/helper"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +36,22 @@ func DeleteChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 		}
 
 		store := storage.NewStorage(appCtx.GetDatabase())
+
+		challenge, err := store.GetChallenge(c.Request.Context(), id)
+		if err != nil {
+			panic(err)
+		}
+
+		if challenge.Image != "" {
+			oldFileName := helper.ExtractFileNameFromURL(challenge.Image)
+			if oldFileName != "" {
+				r2Service, err := service.NewR2Service()
+				if err == nil {
+					_ = r2Service.DeleteFile(oldFileName)
+				}
+			}
+		}
+
 		business := biz.NewDeleteChallengeBiz(store)
 
 		if err := business.DeleteChallenge(c.Request.Context(), id); err != nil {

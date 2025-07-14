@@ -34,6 +34,7 @@ type Challenge struct {
 	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id" example:"62b4c3789196e8a159933552"`
 	CreatedAt  *time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"updated_at" bson:"updated_at"`
+	Image      string             `json:"image" bson:"image"`
 }
 
 func (Challenge) TableName() string {
@@ -53,6 +54,7 @@ type ChallengeCreate struct {
 	SectionID  primitive.ObjectID `json:"section_id" bson:"section_id" example:"62b4c3789196e8a159933552"`
 	CreatedAt  *time.Time         `json:"-" bson:"created_at"`
 	UpdatedAt  *time.Time         `json:"-" bson:"updated_at"`
+	Image      string             `json:"image" bson:"image"`
 }
 
 func (ChallengeCreate) TableName() string {
@@ -70,6 +72,7 @@ type ChallengeUpdate struct {
 	Category   *string             `json:"category,omitempty" bson:"category,omitempty" example:"work"`
 	SectionID  *primitive.ObjectID `json:"section_id,omitempty" bson:"section_id,omitempty" example:"62b4c3789196e8a159933552"`
 	UpdatedAt  *time.Time          `json:"-" bson:"updated_at,omitempty"`
+	Image      *string             `json:"image,omitempty" bson:"image,omitempty"`
 }
 
 func (ChallengeUpdate) TableName() string {

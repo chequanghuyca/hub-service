@@ -97,6 +97,8 @@ definitions:
       id:
         example: 62b4c3789196e8a159933552
         type: string
+      image:
+        type: string
       section_id:
         example: 62b4c3789196e8a159933552
         type: string
@@ -192,6 +194,8 @@ definitions:
         - hard
         example: easy
         type: string
+      image:
+        type: string
       section_id:
         example: 62b4c3789196e8a159933552
         type: string
@@ -247,6 +251,8 @@ definitions:
         - medium
         - hard
         example: easy
+        type: string
+      image:
         type: string
       section_id:
         example: 62b4c3789196e8a159933552

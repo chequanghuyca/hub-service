@@ -6,6 +6,7 @@ import (
 	ginemail "hub-service/module/email/transport"
 	scoreTransport "hub-service/module/score/transport"
 	sectionTransport "hub-service/module/section/transport"
+	uploadTransport "hub-service/module/upload/transport"
 	ginuser "hub-service/module/user/transport"
 
 	"github.com/gin-gonic/gin"
@@ -25,4 +26,5 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 	challengeTransport.RegisterRoutes(v1, appCtx)
 	scoreTransport.RegisterRoutes(v1, appCtx)
 	sectionTransport.RegisterRoutes(v1, appCtx)
+	uploadTransport.RegisterRoutes(v1, appCtx)
 }

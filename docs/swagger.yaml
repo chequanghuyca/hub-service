@@ -1183,6 +1183,47 @@ paths:
       summary: Get all sections with only id and title
       tags:
       - sections
+  /api/upload/r2-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload image to R2, file sẽ được đổi tên thành UID duy nhất, trả
+        về URL public qua Worker cho FE đọc.
+      parameters:
+      - description: Image file (jpg, jpeg, png, gif, webp, max 10MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Public image URL
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Upload image to Cloudflare R2
+      tags:
+      - upload
   /api/users/{id}:
     delete:
       consumes:

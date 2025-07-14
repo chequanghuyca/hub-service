@@ -31,3 +31,15 @@ func ToFloat64(v interface{}) (float64, error) {
 		return 0, fmt.Errorf("cannot convert %T to float64", v)
 	}
 }
+
+// ExtractFileNameFromURL trích xuất tên file từ URL R2
+func ExtractFileNameFromURL(url string) string {
+	if url == "" {
+		return ""
+	}
+	parts := strings.Split(url, "/")
+	if len(parts) > 0 {
+		return parts[len(parts)-1]
+	}
+	return ""
+}

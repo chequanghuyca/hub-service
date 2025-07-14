@@ -15,8 +15,15 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-// UploadToR2 uploads a file to Cloudflare R2 and returns the public Worker URL with unique UID filename
-func UploadToR2(fileHeader *multipart.FileHeader) (string, error) {
+// R2Service struct để quản lý R2 operations
+type R2Service struct {
+	client     *minio.Client
+	bucketName string
+	workerURL  string
+}
+
+// NewR2Service tạo instance mới của R2Service
+func NewR2Service() (*R2Service, error) {
 	endpoint := os.Getenv("R2_ENDPOINT")
 	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
@@ -30,9 +37,18 @@ func UploadToR2(fileHeader *multipart.FileHeader) (string, error) {
 		Secure: true,
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to init minio client: %w", err)
+		return nil, fmt.Errorf("failed to init minio client: %w", err)
 	}
 
+	return &R2Service{
+		client:     minioClient,
+		bucketName: bucketName,
+		workerURL:  workerURL,
+	}, nil
+}
+
+// UploadToR2 uploads a file to Cloudflare R2 and returns the public Worker URL with unique UID filename
+func (s *R2Service) UploadToR2(fileHeader *multipart.FileHeader) (string, error) {
 	file, err := fileHeader.Open()
 	if err != nil {
 		return "", fmt.Errorf("failed to open file: %w", err)
@@ -49,11 +65,30 @@ func UploadToR2(fileHeader *multipart.FileHeader) (string, error) {
 	objectName := uid + ext
 	contentType := fileHeader.Header.Get("Content-Type")
 
-	_, err = minioClient.PutObject(context.Background(), bucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
+	_, err = s.client.PutObject(context.Background(), s.bucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
 		return "", fmt.Errorf("failed to upload to R2: %w", err)
 	}
 
-	url := workerURL + objectName
+	url := s.workerURL + objectName
 	return url, nil
+}
+
+func (s *R2Service) DeleteFile(fileName string) error {
+	ctx := context.Background()
+
+	err := s.client.RemoveObject(ctx, s.bucketName, fileName, minio.RemoveObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UploadToR2(fileHeader *multipart.FileHeader) (string, error) {
+	service, err := NewR2Service()
+	if err != nil {
+		return "", err
+	}
+	return service.UploadToR2(fileHeader)
 }

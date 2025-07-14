@@ -6,7 +6,10 @@ import (
 	"hub-service/module/section/biz"
 	"hub-service/module/section/model"
 	"hub-service/module/section/storage"
+	"hub-service/module/upload/service"
 	"net/http"
+
+	"hub-service/utils/helper"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,6 +45,23 @@ func UpdateSection(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		store := storage.NewStorage(appCtx.GetDatabase())
 		business := biz.NewUpdateSectionBiz(store)
+
+		if data.Image != nil && *data.Image != "" {
+			currentSection, err := store.GetSection(c.Request.Context(), id)
+			if err != nil {
+				panic(err)
+			}
+
+			if currentSection.Image != "" && currentSection.Image != *data.Image {
+				oldFileName := helper.ExtractFileNameFromURL(currentSection.Image)
+				if oldFileName != "" {
+					r2Service, err := service.NewR2Service()
+					if err == nil {
+						_ = r2Service.DeleteFile(oldFileName)
+					}
+				}
+			}
+		}
 
 		if err := business.UpdateSection(c.Request.Context(), id, &data); err != nil {
 			panic(err)

@@ -67,6 +67,9 @@ services:
             BASE_URL_LOCAL: ${BASE_URL_LOCAL}
             BASE_URL_DEV: ${BASE_URL_DEV}
             BASE_URL_TRANSMASTER_PROD: ${BASE_URL_TRANSMASTER_PROD}
+            # Gemini AI
+            GEMINI_API_KEY: ${GEMINI_API_KEY}
+            GEMINI_BASE_URL: ${GEMINI_BASE_URL}
 
             # Security Configuration
             NODE_ENV: production

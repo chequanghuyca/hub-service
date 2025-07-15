@@ -225,7 +225,11 @@ definitions:
         type: string
       challenge_title:
         type: string
-      deepl_translation:
+      gemini_errors:
+        type: string
+      gemini_feedback:
+        type: string
+      gemini_suggestions:
         type: string
       last_attempt_at:
         type: string
@@ -295,8 +299,6 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/model.GetUserScoresResponse'
-      status:
-        type: string
     type: object
   model.GetUserScoresResponse:
     properties:
@@ -340,23 +342,6 @@ definitions:
         type: string
     required:
     - refresh_token
-    type: object
-  model.ScoreRequest:
-    description: Request body for scoring user's translation
-    properties:
-      challenge_id:
-        example: challenge_1
-        type: string
-      sentence_index:
-        example: 0
-        minimum: 0
-        type: integer
-      user_translation:
-        example: I see yellow flowers on the green grass.
-        type: string
-    required:
-    - challenge_id
-    - user_translation
     type: object
   model.Section:
     description: Section of a challenge containing title and content.
@@ -441,23 +426,6 @@ definitions:
     - provider
     - provider_id
     type: object
-  model.SubmitScoreResponse:
-    properties:
-      attempt_count:
-        type: integer
-      best_score:
-        type: number
-      deepl_translation:
-        type: string
-      is_new_best:
-        type: boolean
-      original_content:
-        type: string
-      score:
-        type: number
-      user_translation:
-        type: string
-    type: object
   model.UpdateRoleRequest:
     properties:
       email:
@@ -505,6 +473,51 @@ definitions:
       avatar:
         type: string
       name:
+        type: string
+    type: object
+  transport.Error:
+    properties:
+      correction:
+        type: string
+      description:
+        type: string
+      position:
+        type: integer
+      type:
+        type: string
+    type: object
+  transport.GeminiScoreRequest:
+    properties:
+      challenge_id:
+        type: string
+      target_language:
+        type: string
+      user_translation:
+        type: string
+    required:
+    - challenge_id
+    - target_language
+    - user_translation
+    type: object
+  transport.GeminiScoreResponse:
+    properties:
+      challenge_id:
+        type: string
+      created_at:
+        type: integer
+      errors:
+        items:
+          $ref: '#/definitions/transport.Error'
+        type: array
+      feedback:
+        type: string
+      score:
+        type: number
+      suggestions:
+        items:
+          type: string
+        type: array
+      user_id:
         type: string
     type: object
 info:
@@ -827,19 +840,19 @@ paths:
       summary: Send a single email
       tags:
       - email
-  /api/scores/translate:
+  /api/scores/ai-translate:
     post:
       consumes:
       - application/json
-      description: Submits a user's translation, gets a score from DeepL, and saves
-        the result.
+      description: Analyzes user translation using Gemini AI for grammar, syntax,
+        and language accuracy
       parameters:
-      - description: Translation scoring request
+      - description: Gemini scoring request
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.ScoreRequest'
+          $ref: '#/definitions/transport.GeminiScoreRequest'
       produces:
       - application/json
       responses:
@@ -850,7 +863,7 @@ paths:
             - $ref: '#/definitions/common.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/model.SubmitScoreResponse'
+                  $ref: '#/definitions/transport.GeminiScoreResponse'
               type: object
         "400":
           description: Bad request - invalid input
@@ -870,7 +883,7 @@ paths:
             $ref: '#/definitions/common.AppError'
       security:
       - BearerAuth: []
-      summary: Score and save user translation for a challenge
+      summary: Score and analyze grammar using Gemini AI
       tags:
       - scores
   /api/scores/user/{user_id}:

@@ -15,7 +15,7 @@ func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
 			protected.GET("/user/:user_id", GetUserScores(appCtx))
-			protected.POST("/translate", auth.AuthMiddleware(appCtx), ScoreTranslationHandler(appCtx))
+			protected.POST("/ai-translate", auth.AuthMiddleware(appCtx), GeminiScoreHandler(appCtx))
 		}
 	}
 }

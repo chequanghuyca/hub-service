@@ -5,6 +5,7 @@ import (
 	"hub-service/core/auth/tokenprovider/jwt"
 	"hub-service/infrastructure/database/database"
 	"hub-service/infrastructure/external/deepl"
+	"os"
 
 	deeplgo "github.com/bounoable/deepl"
 )
@@ -14,6 +15,7 @@ type AppContext interface {
 	GetDatabase() *database.Database
 	GetTokenProvider() tokenprovider.Provider
 	GetDeeplClient() *deeplgo.Client
+	GetEnv(key string) string
 }
 
 type appContext struct {
@@ -48,4 +50,8 @@ func (ctx *appContext) GetTokenProvider() tokenprovider.Provider {
 
 func (ctx *appContext) GetDeeplClient() *deeplgo.Client {
 	return ctx.deeplClient
+}
+
+func (appCtx *appContext) GetEnv(key string) string {
+	return os.Getenv(key)
 }

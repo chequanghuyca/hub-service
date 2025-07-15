@@ -514,14 +514,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/scores/translate": {
+        "/api/scores/ai-translate": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Submits a user's translation, gets a score from DeepL, and saves the result.",
+                "description": "Analyzes user translation using Gemini AI for grammar, syntax, and language accuracy",
                 "consumes": [
                     "application/json"
                 ],
@@ -531,15 +531,15 @@ const docTemplate = `{
                 "tags": [
                     "scores"
                 ],
-                "summary": "Score and save user translation for a challenge",
+                "summary": "Score and analyze grammar using Gemini AI",
                 "parameters": [
                     {
-                        "description": "Translation scoring request",
+                        "description": "Gemini scoring request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.ScoreRequest"
+                            "$ref": "#/definitions/transport.GeminiScoreRequest"
                         }
                     }
                 ],
@@ -555,7 +555,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.SubmitScoreResponse"
+                                            "$ref": "#/definitions/transport.GeminiScoreResponse"
                                         }
                                     }
                                 }
@@ -1884,7 +1884,13 @@ const docTemplate = `{
                 "challenge_title": {
                     "type": "string"
                 },
-                "deepl_translation": {
+                "gemini_errors": {
+                    "type": "string"
+                },
+                "gemini_feedback": {
+                    "type": "string"
+                },
+                "gemini_suggestions": {
                     "type": "string"
                 },
                 "last_attempt_at": {
@@ -1981,9 +1987,6 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/model.GetUserScoresResponse"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },
@@ -2051,29 +2054,6 @@ const docTemplate = `{
             "properties": {
                 "refresh_token": {
                     "type": "string"
-                }
-            }
-        },
-        "model.ScoreRequest": {
-            "description": "Request body for scoring user's translation",
-            "type": "object",
-            "required": [
-                "challenge_id",
-                "user_translation"
-            ],
-            "properties": {
-                "challenge_id": {
-                    "type": "string",
-                    "example": "challenge_1"
-                },
-                "sentence_index": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 0
-                },
-                "user_translation": {
-                    "type": "string",
-                    "example": "I see yellow flowers on the green grass."
                 }
             }
         },
@@ -2201,32 +2181,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.SubmitScoreResponse": {
-            "type": "object",
-            "properties": {
-                "attempt_count": {
-                    "type": "integer"
-                },
-                "best_score": {
-                    "type": "number"
-                },
-                "deepl_translation": {
-                    "type": "string"
-                },
-                "is_new_best": {
-                    "type": "boolean"
-                },
-                "original_content": {
-                    "type": "string"
-                },
-                "score": {
-                    "type": "number"
-                },
-                "user_translation": {
-                    "type": "string"
-                }
-            }
-        },
         "model.UpdateRoleRequest": {
             "type": "object",
             "required": [
@@ -2296,6 +2250,74 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.Error": {
+            "type": "object",
+            "properties": {
+                "correction": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.GeminiScoreRequest": {
+            "type": "object",
+            "required": [
+                "challenge_id",
+                "target_language",
+                "user_translation"
+            ],
+            "properties": {
+                "challenge_id": {
+                    "type": "string"
+                },
+                "target_language": {
+                    "type": "string"
+                },
+                "user_translation": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.GeminiScoreResponse": {
+            "type": "object",
+            "properties": {
+                "challenge_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transport.Error"
+                    }
+                },
+                "feedback": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "suggestions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
                     "type": "string"
                 }
             }

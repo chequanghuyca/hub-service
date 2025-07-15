@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"errors"
 	"hub-service/common"
 	"hub-service/core/appctx"
 	challengestorage "hub-service/module/challenge/storage"
@@ -40,8 +41,16 @@ func GetUserScores(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		store := storage.NewStorage(appCtx.GetDatabase())
 		challengeStore := challengestorage.NewStorage(appCtx.GetDatabase())
-		translateBiz := scorebiz.NewTranslateBiz(appCtx, challengeStore)
-		business := scorebiz.NewScoreBiz(store, challengeStore, translateBiz)
+		geminiAPIKey := appCtx.GetEnv("GEMINI_API_KEY")
+		if geminiAPIKey == "" {
+			panic(common.NewErrorResponse(err, "Gemini API key not configured", "GEMINI_CONFIG_ERROR", "CONFIG_ERROR"))
+		}
+		geminiBaseURL := appCtx.GetEnv("GEMINI_BASE_URL")
+		if geminiBaseURL == "" {
+			panic(common.NewErrorResponse(errors.New("gemini base url not configured"), "Gemini base url not configured", "GEMINI_CONFIG_ERROR", "CONFIG_ERROR"))
+		}
+		geminiBiz := scorebiz.NewGeminiBiz(geminiAPIKey, geminiBaseURL)
+		business := scorebiz.NewScoreBiz(store, challengeStore, geminiBiz)
 
 		result, err := business.GetUserScores(c.Request.Context(), userID)
 		if err != nil {

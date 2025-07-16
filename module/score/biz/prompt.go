@@ -24,7 +24,7 @@ Return a JSON object with the following fields:
   "suggestions": [
     "Learning tips or revision advice in Vietnamese"
   ],
-  "feedback": "General comments in Vietnamese, friendly and constructive. Should guide the learner on what to improve and encourage them."
+  "feedback": "A short comment in Vietnamese, expressing the level of exactly, good, average, bad, or other."
 }
 
 Requirements:

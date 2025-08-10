@@ -54,8 +54,15 @@ func (s *Storage) GetUserScoreSummary(ctx context.Context, userID primitive.Obje
 
 	pipeline := []bson.M{
 		{"$match": bson.M{"user_id": userID}},
+		// Group by challenge_id to get the best score for each challenge
 		{"$group": bson.M{
-			"_id":              "$user_id",
+			"_id":           "$challenge_id",
+			"best_score":    bson.M{"$max": "$best_score"},
+			"attempt_count": bson.M{"$sum": 1},
+		}},
+		// Then group all results to calculate totals
+		{"$group": bson.M{
+			"_id":              nil,
 			"total_score":      bson.M{"$sum": "$best_score"},
 			"total_challenges": bson.M{"$sum": 1},
 			"average_score":    bson.M{"$avg": "$best_score"},
@@ -173,7 +180,7 @@ func (s *Storage) GetUserSectionScoreSummary(ctx context.Context, userID, sectio
 
 	for _, score := range scores {
 		effectiveScore := score.BestScore
-		// Nếu BestScore = 0 thì bỏ qua (không dùng DeepLScore nữa)
+		// Nếu BestScore = 0 thì bỏ qua
 		if effectiveScore == 0 {
 			continue
 		}

@@ -11,6 +11,8 @@ type User struct {
 	Email        string             `bson:"email" json:"email"`
 	Name         string             `bson:"name" json:"name"`
 	Avatar       string             `bson:"avatar,omitempty" json:"avatar,omitempty"`
+	Phone        string             `bson:"phone,omitempty" json:"phone,omitempty"`
+	Bio          string             `bson:"bio,omitempty" json:"bio,omitempty"`
 	Role         string             `bson:"role" json:"role"`
 	Provider     string             `bson:"provider,omitempty" json:"provider,omitempty"`
 	ProviderID   string             `bson:"provider_id,omitempty" json:"provider_id,omitempty"`
@@ -24,6 +26,8 @@ type UserCreate struct {
 	Email        string     `json:"email" binding:"required,email"`
 	Name         string     `json:"name" binding:"required"`
 	Avatar       string     `json:"avatar"`
+	Phone        string     `json:"phone,omitempty"`
+	Bio          string     `json:"bio,omitempty"`
 	Role         string     `json:"role" binding:"required,oneof=admin client super_admin"`
 	Provider     string     `json:"provider,omitempty"`
 	ProviderID   string     `json:"provider_id,omitempty"`
@@ -34,6 +38,8 @@ type UserCreate struct {
 type UserUpdate struct {
 	Name   string `json:"name,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
+	Phone  string `json:"phone,omitempty"`
+	Bio    string `json:"bio,omitempty"`
 }
 
 type UserResponse struct {
@@ -41,6 +47,8 @@ type UserResponse struct {
 	Email      string             `json:"email"`
 	Name       string             `json:"name"`
 	Avatar     string             `json:"avatar,omitempty"`
+	Phone      string             `json:"phone,omitempty"`
+	Bio        string             `json:"bio,omitempty"`
 	Role       string             `json:"role"`
 	TotalScore float64            `json:"total_score" example:"95.5"` // Total score from all challenges
 	CreatedAt  time.Time          `json:"created_at"`

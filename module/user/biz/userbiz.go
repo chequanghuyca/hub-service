@@ -333,14 +333,18 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 		// Update existing user
 		update := false
 		updateData := make(map[string]interface{})
-		if user.Name != req.Name {
+
+		// Preserve user-edited fields: only hydrate from provider if currently empty
+		if user.Name == "" && req.Name != "" {
 			updateData["name"] = req.Name
 			update = true
 		}
-		if user.Avatar != req.Avatar {
+		if user.Avatar == "" && req.Avatar != "" {
 			updateData["avatar"] = req.Avatar
 			update = true
 		}
+
+		// Always keep provider metadata up to date
 		if user.Provider != req.Provider {
 			updateData["provider"] = req.Provider
 			update = true

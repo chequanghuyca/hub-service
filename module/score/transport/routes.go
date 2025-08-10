@@ -10,6 +10,9 @@ import (
 func RegisterRoutes(g *gin.RouterGroup, appCtx appctx.AppContext) {
 	scores := g.Group("/scores")
 	{
+		// Public demo endpoint (no auth)
+		scores.POST("/ai-demo", AIDemoScoreHandler(appCtx))
+
 		// All score operations require authentication
 		protected := scores.Group("/")
 		protected.Use(auth.AuthMiddleware(appCtx))

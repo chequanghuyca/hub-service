@@ -1,11 +1,14 @@
 package transport
 
 import (
+	"encoding/json"
 	"errors"
 	"hub-service/common"
 	"hub-service/core/appctx"
 	challengestorage "hub-service/module/challenge/storage"
 	scorebiz "hub-service/module/score/biz"
+	scoremodel "hub-service/module/score/model"
+	"hub-service/module/score/storage"
 	"net/http"
 	"time"
 
@@ -87,9 +90,8 @@ func GeminiScoreHandler(appCtx appctx.AppContext) gin.HandlerFunc {
 			panic(common.ErrInvalidRequest(errors.New("user_id in context is not of type ObjectID")))
 		}
 
-		// Create dependencies for score biz (similar to score_translation.go)
-		// Remove unused variable scoreStore
-		// scoreStore := scorestorage.NewStorage(appCtx.GetDatabase())
+		// Create dependencies for score biz
+		scoreStore := storage.NewStorage(appCtx.GetDatabase())
 		challengeStore := challengestorage.NewStorage(appCtx.GetDatabase())
 
 		geminiAPIKey := appCtx.GetEnv("GEMINI_API_KEY")
@@ -102,38 +104,52 @@ func GeminiScoreHandler(appCtx appctx.AppContext) gin.HandlerFunc {
 			panic(common.NewErrorResponse(errors.New("gemini base url not configured"), "Gemini base url not configured", "GEMINI_CONFIG_ERROR", "CONFIG_ERROR"))
 		}
 
-		geminiAnalyzer := scorebiz.NewGeminiBiz(geminiAPIKey, geminiBaseURL)
+		geminiBiz := scorebiz.NewGeminiBiz(geminiAPIKey, geminiBaseURL)
+		business := scorebiz.NewScoreBiz(scoreStore, challengeStore, geminiBiz)
 
-		challenge, err := challengeStore.GetChallenge(c.Request.Context(), req.ChallengeID)
-		if err != nil {
-			panic(common.ErrEntityNotFound("challenge", err))
+		// Convert request to SubmitScoreRequest format
+		submitReq := &scoremodel.SubmitScoreRequest{
+			ChallengeID:     req.ChallengeID.Hex(),
+			UserTranslation: req.UserTranslation,
 		}
 
-		analysis, err := geminiAnalyzer.AnalyzeGrammar(
-			c.Request.Context(),
-			challenge.Content,
-			req.UserTranslation,
-			req.TargetLanguage,
-		)
+		// Use ScoreBiz to analyze and save to database
+		result, err := business.SubmitScore(c.Request.Context(), userID, submitReq, req.TargetLanguage)
 		if err != nil {
 			panic(err)
 		}
 
-		modelErrors := make([]Error, len(analysis.Errors))
-		for i, err := range analysis.Errors {
-			modelErrors[i] = Error{
-				Type:        err.Type,
-				Description: err.Description,
-				Position:    err.Position,
-				Correction:  err.Correction,
+		// Convert result back to GeminiScoreResponse format
+		var modelErrors []Error
+		if result.Errors != "" {
+			// Parse errors JSON string back to slice
+			var errors []scorebiz.Error
+			if err := json.Unmarshal([]byte(result.Errors), &errors); err == nil {
+				modelErrors = make([]Error, len(errors))
+				for i, err := range errors {
+					modelErrors[i] = Error{
+						Type:        err.Type,
+						Description: err.Description,
+						Position:    err.Position,
+						Correction:  err.Correction,
+					}
+				}
+			}
+		}
+
+		var suggestions []string
+		if result.Suggestions != "" {
+			// Parse suggestions JSON string back to slice
+			if err := json.Unmarshal([]byte(result.Suggestions), &suggestions); err != nil {
+				suggestions = []string{}
 			}
 		}
 
 		response := &GeminiScoreResponse{
-			Score:       analysis.Score,
-			Feedback:    analysis.Feedback,
+			Score:       result.Score,
+			Feedback:    result.Feedback,
 			Errors:      modelErrors,
-			Suggestions: analysis.Suggestions,
+			Suggestions: suggestions,
 			ChallengeID: req.ChallengeID,
 			UserID:      userID,
 			CreatedAt:   time.Now().Unix(),

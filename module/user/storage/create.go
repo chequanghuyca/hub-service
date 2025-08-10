@@ -16,6 +16,8 @@ func (s *UserStorage) Create(ctx context.Context, userCreate *model.UserCreate) 
 		Email:        userCreate.Email,
 		Name:         userCreate.Name,
 		Avatar:       userCreate.Avatar,
+		Phone:        userCreate.Phone,
+		Bio:          userCreate.Bio,
 		Role:         userCreate.Role,
 		Provider:     userCreate.Provider,
 		ProviderID:   userCreate.ProviderID,

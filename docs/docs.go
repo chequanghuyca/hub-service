@@ -514,6 +514,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/scores/ai-demo": {
+            "post": {
+                "description": "Performs Gemini AI analysis on a fixed Vietnamese sentence using the provided user translation and target language. No auth. Does not save data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scores"
+                ],
+                "summary": "AI demo scoring (no auth, no persistence)",
+                "parameters": [
+                    {
+                        "description": "Demo scoring request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/transport.DemoGeminiScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/transport.AIDemoResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/scores/ai-translate": {
             "post": {
                 "security": [
@@ -1270,6 +1328,95 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get current user's profile information using access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get current user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GetUserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update current user's profile information using access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update current user profile",
+                "parameters": [
+                    {
+                        "description": "User update information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UserUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.UpdateUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/refresh": {
             "post": {
                 "description": "Get a new access token and refresh token pair using a valid refresh token.",
@@ -1884,19 +2031,19 @@ const docTemplate = `{
                 "challenge_title": {
                     "type": "string"
                 },
-                "gemini_errors": {
+                "errors": {
                     "type": "string"
                 },
-                "gemini_feedback": {
-                    "type": "string"
-                },
-                "gemini_suggestions": {
+                "feedback": {
                     "type": "string"
                 },
                 "last_attempt_at": {
                     "type": "string"
                 },
                 "original_content": {
+                    "type": "string"
+                },
+                "suggestions": {
                     "type": "string"
                 },
                 "user_translation": {
@@ -2218,6 +2365,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "bio": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -2228,6 +2378,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "role": {
@@ -2249,7 +2402,60 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "bio": {
+                    "type": "string"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.AIDemoResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/transport.Error"
+                    }
+                },
+                "feedback": {
+                    "type": "string"
+                },
+                "original_text": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "suggestions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "target_language": {
+                    "type": "string"
+                },
+                "user_translation": {
+                    "type": "string"
+                }
+            }
+        },
+        "transport.DemoGeminiScoreRequest": {
+            "type": "object",
+            "required": [
+                "target_language",
+                "user_translation"
+            ],
+            "properties": {
+                "target_language": {
+                    "type": "string"
+                },
+                "user_translation": {
                     "type": "string"
                 }
             }

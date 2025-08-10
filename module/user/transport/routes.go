@@ -18,6 +18,8 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 		protected := users.Group("/")
 		protected.Use(auth.AuthMiddleware(appCtx))
 		{
+			protected.GET("/me", GetMe(appCtx))
+			protected.PATCH("/me", UpdateMe(appCtx))
 			protected.GET("/:id", GetUserByID(appCtx))
 			protected.PATCH("/:id", UpdateUser(appCtx))
 			protected.DELETE("/:id", auth.RequireRoles(common.RoleSuperAdmin, common.RoleAdmin), DeleteUser(appCtx))

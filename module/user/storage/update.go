@@ -19,6 +19,18 @@ func (s *UserStorage) Update(ctx context.Context, id primitive.ObjectID, userUpd
 		updateData["name"] = userUpdate.Name
 	}
 
+	if userUpdate.Avatar != "" {
+		updateData["avatar"] = userUpdate.Avatar
+	}
+
+	if userUpdate.Phone != "" {
+		updateData["phone"] = userUpdate.Phone
+	}
+
+	if userUpdate.Bio != "" {
+		updateData["bio"] = userUpdate.Bio
+	}
+
 	if len(updateData) == 0 {
 		return s.GetByID(ctx, id)
 	}

@@ -194,15 +194,15 @@ func (biz *ScoreBiz) SubmitScore(ctx context.Context, userID primitive.ObjectID,
 	var bestScore float64
 	isNewBest := false
 
-	geminiErrors := ""
+	errors := ""
 	if len(analysis.Errors) > 0 {
 		b, _ := json.Marshal(analysis.Errors)
-		geminiErrors = string(b)
+		errors = string(b)
 	}
-	geminiSuggestions := ""
+	suggestions := ""
 	if len(analysis.Suggestions) > 0 {
 		b, _ := json.Marshal(analysis.Suggestions)
-		geminiSuggestions = string(b)
+		suggestions = string(b)
 	}
 
 	if existingScore == nil {
@@ -211,18 +211,18 @@ func (biz *ScoreBiz) SubmitScore(ctx context.Context, userID primitive.ObjectID,
 		isNewBest = true
 
 		scoreCreate := &scoremodel.ScoreCreate{
-			UserID:            userID,
-			ChallengeID:       challengeID,
-			UserTranslation:   req.UserTranslation,
-			GeminiScore:       analysis.Score,
-			GeminiFeedback:    analysis.Feedback,
-			GeminiErrors:      geminiErrors,
-			GeminiSuggestions: geminiSuggestions,
-			OriginalContent:   challenge.Content,
-			AttemptCount:      attemptCount,
-			BestScore:         bestScore,
-			CreatedAt:         now,
-			UpdatedAt:         now,
+			UserID:          userID,
+			ChallengeID:     challengeID,
+			UserTranslation: req.UserTranslation,
+			Score:           analysis.Score,
+			Feedback:        analysis.Feedback,
+			Errors:          errors,
+			Suggestions:     suggestions,
+			OriginalContent: challenge.Content,
+			AttemptCount:    attemptCount,
+			BestScore:       bestScore,
+			CreatedAt:       now,
+			UpdatedAt:       now,
 		}
 		err = biz.scoreStorage.CreateScore(ctx, scoreCreate)
 	} else {
@@ -233,14 +233,14 @@ func (biz *ScoreBiz) SubmitScore(ctx context.Context, userID primitive.ObjectID,
 			isNewBest = true
 		}
 		scoreUpdate := &scoremodel.ScoreUpdate{
-			UserTranslation:   &req.UserTranslation,
-			GeminiScore:       &analysis.Score,
-			GeminiFeedback:    &analysis.Feedback,
-			GeminiErrors:      &geminiErrors,
-			GeminiSuggestions: &geminiSuggestions,
-			AttemptCount:      &attemptCount,
-			BestScore:         &bestScore,
-			UpdatedAt:         &now,
+			UserTranslation: &req.UserTranslation,
+			Score:           &analysis.Score,
+			Feedback:        &analysis.Feedback,
+			Errors:          &errors,
+			Suggestions:     &suggestions,
+			AttemptCount:    &attemptCount,
+			BestScore:       &bestScore,
+			UpdatedAt:       &now,
 		}
 		err = biz.scoreStorage.UpdateScore(ctx, existingScore.ID, scoreUpdate)
 	}
@@ -250,15 +250,15 @@ func (biz *ScoreBiz) SubmitScore(ctx context.Context, userID primitive.ObjectID,
 	}
 
 	return &scoremodel.SubmitScoreResponse{
-		Score:             analysis.Score,
-		UserTranslation:   req.UserTranslation,
-		GeminiFeedback:    analysis.Feedback,
-		GeminiErrors:      geminiErrors,
-		GeminiSuggestions: geminiSuggestions,
-		OriginalContent:   challenge.Content,
-		AttemptCount:      attemptCount,
-		BestScore:         bestScore,
-		IsNewBest:         isNewBest,
+		Score:           analysis.Score,
+		UserTranslation: req.UserTranslation,
+		Feedback:        analysis.Feedback,
+		Errors:          errors,
+		Suggestions:     suggestions,
+		OriginalContent: challenge.Content,
+		AttemptCount:    attemptCount,
+		BestScore:       bestScore,
+		IsNewBest:       isNewBest,
 	}, nil
 }
 
@@ -280,16 +280,16 @@ func (biz *ScoreBiz) GetUserScores(ctx context.Context, userID primitive.ObjectI
 			continue
 		}
 		challengeScores[i] = scoremodel.ChallengeScore{
-			ChallengeID:       score.ChallengeID,
-			ChallengeTitle:    challenge.Title,
-			BestScore:         score.BestScore,
-			AttemptCount:      score.AttemptCount,
-			LastAttemptAt:     score.UpdatedAt,
-			UserTranslation:   score.UserTranslation,
-			GeminiFeedback:    score.GeminiFeedback,
-			GeminiErrors:      score.GeminiErrors,
-			GeminiSuggestions: score.GeminiSuggestions,
-			OriginalContent:   score.OriginalContent,
+			ChallengeID:     score.ChallengeID,
+			ChallengeTitle:  challenge.Title,
+			BestScore:       score.BestScore,
+			AttemptCount:    score.AttemptCount,
+			LastAttemptAt:   score.UpdatedAt,
+			UserTranslation: score.UserTranslation,
+			Feedback:        score.Feedback,
+			Errors:          score.Errors,
+			Suggestions:     score.Suggestions,
+			OriginalContent: score.OriginalContent,
 		}
 	}
 

@@ -23,8 +23,8 @@ func NewListChallengeBiz(store ListChallengeStore) *listChallengeBiz {
 	return &listChallengeBiz{store: store}
 }
 
-func (biz *listChallengeBiz) ListChallenge(ctx context.Context, paging *common.Paging, sectionID string, search string) ([]model.Challenge, error) {
-	result, err := biz.store.List(ctx, paging, sectionID, search)
+func (biz *listChallengeBiz) ListChallenge(ctx context.Context, paging *common.Paging, sectionID string, search string, sortField string, sortOrder string) ([]model.Challenge, error) {
+	result, err := biz.store.List(ctx, paging, sectionID, search, sortField, sortOrder)
 	if err != nil {
 		return nil, err
 	}

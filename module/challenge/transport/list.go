@@ -13,7 +13,7 @@ import (
 
 // ListChallenge godoc
 // @Summary List challenges
-// @Description Get a list of translation challenges with pagination and search. All authenticated users can access this endpoint.
+// @Description Get a list of translation challenges with pagination, search, and sorting. All authenticated users can access this endpoint.
 // @Tags challenges
 // @Accept json
 // @Produce json
@@ -22,6 +22,8 @@ import (
 // @Param limit query int false "Number of items per page" default(10)
 // @Param section_id query string false "Filter by section ID"
 // @Param search query string false "Search in title and content (case-insensitive)"
+// @Param sort_field query string false "Field to sort by (e.g., created_at, title, updated_at)" default(created_at)
+// @Param sort_order query string false "Sort order (ASC or DESC)" Enums(ASC, DESC) default(DESC)
 // @Success 200 {object} common.Response{data=[]model.Challenge,meta=common.Paging} "Success"
 // @Failure 400 {object} common.AppError "Bad request"
 // @Failure 401 {object} common.AppError "Unauthorized"
@@ -41,10 +43,14 @@ func ListChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 		// Get search from query parameter
 		search := c.Query("search")
 
+		// Sorting params (optional)
+		sortField := c.DefaultQuery("sort_field", "")
+		sortOrder := c.DefaultQuery("sort_order", "")
+
 		store := storage.NewStorage(appCtx.GetDatabase())
 		business := biz.NewListChallengeBiz(store)
 
-		result, err := business.ListChallenge(c.Request.Context(), &paging, sectionID, search)
+		result, err := business.ListChallenge(c.Request.Context(), &paging, sectionID, search, sortField, sortOrder)
 		if err != nil {
 			panic(err)
 		}

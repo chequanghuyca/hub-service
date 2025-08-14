@@ -80,40 +80,6 @@ definitions:
     - listRecipient
     - subject
     type: object
-  hub-service_module_challenge_model.Challenge:
-    description: Contains the details of a translation challenge.
-    properties:
-      category:
-        example: work
-        type: string
-      content:
-        example: Hello, world!
-        type: string
-      created_at:
-        type: string
-      difficulty:
-        example: easy
-        type: string
-      id:
-        example: 62b4c3789196e8a159933552
-        type: string
-      image:
-        type: string
-      section_id:
-        example: 62b4c3789196e8a159933552
-        type: string
-      source_lang:
-        example: VI
-        type: string
-      target_lang:
-        example: EN
-        type: string
-      title:
-        example: Greetings
-        type: string
-      updated_at:
-        type: string
-    type: object
   hub-service_module_score_model.UserScoreSummary:
     properties:
       average_score:
@@ -215,6 +181,43 @@ definitions:
     - target_lang
     - title
     type: object
+  model.ChallengeDetail:
+    properties:
+      category:
+        example: work
+        type: string
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        type: string
+      difficulty:
+        example: easy
+        type: string
+      id:
+        example: 62b4c3789196e8a159933552
+        type: string
+      image:
+        type: string
+      section_id:
+        example: 62b4c3789196e8a159933552
+        type: string
+      source_lang:
+        example: VI
+        type: string
+      target_lang:
+        example: EN
+        type: string
+      title:
+        example: Greetings
+        type: string
+      updated_at:
+        type: string
+      user_best_score:
+        type: number
+      user_score:
+        $ref: '#/definitions/model.ChallengeScore'
+    type: object
   model.ChallengeScore:
     properties:
       attempt_count:
@@ -275,6 +278,41 @@ definitions:
         example: Formal Greetings
         minLength: 1
         type: string
+    type: object
+  model.ChallengeWithUserBestScore:
+    properties:
+      category:
+        example: work
+        type: string
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        type: string
+      difficulty:
+        example: easy
+        type: string
+      id:
+        example: 62b4c3789196e8a159933552
+        type: string
+      image:
+        type: string
+      section_id:
+        example: 62b4c3789196e8a159933552
+        type: string
+      source_lang:
+        example: VI
+        type: string
+      target_lang:
+        example: EN
+        type: string
+      title:
+        example: Greetings
+        type: string
+      updated_at:
+        type: string
+      user_best_score:
+        type: number
     type: object
   model.DeleteUserResponse:
     properties:
@@ -636,7 +674,7 @@ paths:
             - $ref: '#/definitions/common.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
+                  $ref: '#/definitions/model.ChallengeDetail'
               type: object
         "400":
           description: Invalid ID format
@@ -804,7 +842,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/hub-service_module_challenge_model.Challenge'
+                    $ref: '#/definitions/model.ChallengeWithUserBestScore'
                   type: array
                 meta:
                   $ref: '#/definitions/common.Paging'

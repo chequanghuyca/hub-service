@@ -7,6 +7,7 @@ type Response struct {
 }
 
 type successResponse struct {
+	Status string      `json:"status"`
 	Data   interface{} `json:"data"`
 	Paging interface{} `json:"meta,omitempty"`
 	Filter interface{} `json:"filter,omitempty"`
@@ -14,6 +15,7 @@ type successResponse struct {
 
 func NewSuccessResponse(data, paging, filter interface{}) *successResponse {
 	return &successResponse{
+		Status: "success",
 		Data:   data,
 		Paging: paging,
 		Filter: filter,

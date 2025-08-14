@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	scoremodel "hub-service/module/score/model"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -93,4 +95,17 @@ func GetDifficultyValidation() string {
 // GetValidDifficulties returns all valid difficulty values
 func GetValidDifficulties() []string {
 	return []string{DifficultyEasy, DifficultyMedium, DifficultyHard}
+}
+
+// ChallengeWithUserBestScore is a view model that includes the user's best score for the challenge
+type ChallengeWithUserBestScore struct {
+	Challenge
+	UserBestScore *float64 `json:"user_best_score,omitempty"`
+}
+
+// ChallengeDetail includes optional user-specific fields for a single challenge view
+type ChallengeDetail struct {
+	Challenge
+	UserBestScore *float64                   `json:"user_best_score,omitempty"`
+	UserScore     *scoremodel.ChallengeScore `json:"user_score,omitempty"`
 }

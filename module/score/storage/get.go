@@ -106,6 +106,48 @@ func (s *Storage) GetUserScoreSummary(ctx context.Context, userID primitive.Obje
 	}, nil
 }
 
+// GetUserBestScoresForChallengeIDs returns a map of challengeID -> best_score for the given user
+func (s *Storage) GetUserBestScoresForChallengeIDs(ctx context.Context, userID primitive.ObjectID, challengeIDs []primitive.ObjectID) (map[primitive.ObjectID]float64, error) {
+	if len(challengeIDs) == 0 {
+		return map[primitive.ObjectID]float64{}, nil
+	}
+
+	collection := s.db.MongoDB.GetCollection(model.CollectionName)
+
+	pipeline := []bson.M{
+		{"$match": bson.M{
+			"user_id":      userID,
+			"challenge_id": bson.M{"$in": challengeIDs},
+		}},
+		{"$group": bson.M{
+			"_id":        "$challenge_id",
+			"best_score": bson.M{"$max": "$best_score"},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	type aggResult struct {
+		ID        primitive.ObjectID `bson:"_id"`
+		BestScore float64            `bson:"best_score"`
+	}
+
+	var results []aggResult
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	out := make(map[primitive.ObjectID]float64, len(results))
+	for _, r := range results {
+		out[r.ID] = r.BestScore
+	}
+	return out, nil
+}
+
 // GetUserScoresBySection gets user scores for challenges in a specific section
 func (s *Storage) GetUserScoresBySection(ctx context.Context, userID, sectionID primitive.ObjectID) ([]model.Score, error) {
 	collection := s.db.MongoDB.GetCollection(model.CollectionName)

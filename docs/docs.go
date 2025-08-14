@@ -168,7 +168,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/hub-service_module_challenge_model.Challenge"
+                                                "$ref": "#/definitions/model.ChallengeWithUserBestScore"
                                             }
                                         },
                                         "meta": {
@@ -239,7 +239,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/hub-service_module_challenge_model.Challenge"
+                                            "$ref": "#/definitions/model.ChallengeDetail"
                                         }
                                     }
                                 }
@@ -1840,53 +1840,6 @@ const docTemplate = `{
                 }
             }
         },
-        "hub-service_module_challenge_model.Challenge": {
-            "description": "Contains the details of a translation challenge.",
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string",
-                    "example": "work"
-                },
-                "content": {
-                    "type": "string",
-                    "example": "Hello, world!"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "difficulty": {
-                    "type": "string",
-                    "example": "easy"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "62b4c3789196e8a159933552"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "section_id": {
-                    "type": "string",
-                    "example": "62b4c3789196e8a159933552"
-                },
-                "source_lang": {
-                    "type": "string",
-                    "example": "VI"
-                },
-                "target_lang": {
-                    "type": "string",
-                    "example": "EN"
-                },
-                "title": {
-                    "type": "string",
-                    "example": "Greetings"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "hub-service_module_score_model.UserScoreSummary": {
             "type": "object",
             "properties": {
@@ -2034,6 +1987,58 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ChallengeDetail": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "work"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string",
+                    "example": "easy"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "62b4c3789196e8a159933552"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "section_id": {
+                    "type": "string",
+                    "example": "62b4c3789196e8a159933552"
+                },
+                "source_lang": {
+                    "type": "string",
+                    "example": "VI"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "example": "EN"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Greetings"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_best_score": {
+                    "type": "number"
+                },
+                "user_score": {
+                    "$ref": "#/definitions/model.ChallengeScore"
+                }
+            }
+        },
         "model.ChallengeScore": {
             "type": "object",
             "properties": {
@@ -2114,6 +2119,55 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1,
                     "example": "Formal Greetings"
+                }
+            }
+        },
+        "model.ChallengeWithUserBestScore": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "example": "work"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string",
+                    "example": "easy"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "62b4c3789196e8a159933552"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "section_id": {
+                    "type": "string",
+                    "example": "62b4c3789196e8a159933552"
+                },
+                "source_lang": {
+                    "type": "string",
+                    "example": "VI"
+                },
+                "target_lang": {
+                    "type": "string",
+                    "example": "EN"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Greetings"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_best_score": {
+                    "type": "number"
                 }
             }
         },

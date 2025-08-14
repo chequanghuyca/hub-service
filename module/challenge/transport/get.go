@@ -4,8 +4,10 @@ import (
 	"hub-service/common"
 	"hub-service/core/appctx"
 	"hub-service/module/challenge/biz"
-	_ "hub-service/module/challenge/model"
+	"hub-service/module/challenge/model"
 	"hub-service/module/challenge/storage"
+	scoremodel "hub-service/module/score/model"
+	scorestorage "hub-service/module/score/storage"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +22,7 @@ import (
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Challenge ID (MongoDB ObjectID)"
-// @Success 200 {object} common.Response{data=model.Challenge} "Success"
+// @Success 200 {object} common.Response{data=model.ChallengeDetail} "Success"
 // @Failure 400 {object} common.AppError "Invalid ID format"
 // @Failure 401 {object} common.AppError "Unauthorized"
 // @Failure 404 {object} common.AppError "Challenge not found"
@@ -40,6 +42,46 @@ func GetChallenge(appCtx appctx.AppContext) gin.HandlerFunc {
 			panic(err)
 		}
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
+		// Enrich with user's best score and last answer if available
+		var userID primitive.ObjectID
+		if v, exists := c.Get("user_id"); exists {
+			if uid, ok := v.(primitive.ObjectID); ok {
+				userID = uid
+			}
+		}
+
+		// Default: no user-specific fields
+		detail := model.ChallengeDetail{Challenge: *data}
+
+		if userID != primitive.NilObjectID {
+			sStore := scorestorage.NewStorage(appCtx.GetDatabase())
+			score, err := sStore.GetScoreByUserAndChallenge(c.Request.Context(), userID, data.ID)
+			if err != nil {
+				panic(err)
+			}
+			if score != nil {
+				// Build ChallengeScore-like response
+				cs := scoremodel.ChallengeScore{
+					ChallengeID:     data.ID,
+					ChallengeTitle:  data.Title,
+					BestScore:       score.BestScore,
+					AttemptCount:    score.AttemptCount,
+					LastAttemptAt:   score.UpdatedAt,
+					UserTranslation: score.UserTranslation,
+					Feedback:        score.Feedback,
+					Errors:          score.Errors,
+					Suggestions:     score.Suggestions,
+					OriginalContent: score.OriginalContent,
+				}
+				// Optional fields as requested
+				if score.BestScore > 0 {
+					b := score.BestScore
+					detail.UserBestScore = &b
+				}
+				detail.UserScore = &cs
+			}
+		}
+
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(detail))
 	}
 }

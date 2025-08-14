@@ -759,8 +759,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a list of translation challenges with pagination and search.
-        All authenticated users can access this endpoint.
+      description: Get a list of translation challenges with pagination, search, and
+        sorting. All authenticated users can access this endpoint.
       parameters:
       - default: 1
         description: Page number
@@ -779,6 +779,19 @@ paths:
       - description: Search in title and content (case-insensitive)
         in: query
         name: search
+        type: string
+      - default: created_at
+        description: Field to sort by (e.g., created_at, title, updated_at)
+        in: query
+        name: sort_field
+        type: string
+      - default: DESC
+        description: Sort order (ASC or DESC)
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: sort_order
         type: string
       produces:
       - application/json

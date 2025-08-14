@@ -97,7 +97,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a list of translation challenges with pagination and search. All authenticated users can access this endpoint.",
+                "description": "Get a list of translation challenges with pagination, search, and sorting. All authenticated users can access this endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -133,6 +133,24 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Search in title and content (case-insensitive)",
                         "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Field to sort by (e.g., created_at, title, updated_at)",
+                        "name": "sort_field",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "ASC",
+                            "DESC"
+                        ],
+                        "type": "string",
+                        "default": "DESC",
+                        "description": "Sort order (ASC or DESC)",
+                        "name": "sort_order",
                         "in": "query"
                     }
                 ],

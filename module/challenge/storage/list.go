@@ -47,8 +47,22 @@ func (s *Storage) List(
 	findOptions.SetSkip(int64((paging.Page - 1) * paging.Limit))
 	findOptions.SetLimit(int64(paging.Limit))
 
-	// Sorting
-	findOptions.SetSort(bson.D{{Key: "created_at", Value: -1}})
+	// Sorting: use provided sortField and sortOrder from variadic moreKeys
+	// Defaults
+	sortField := "created_at"
+	sortOrder := "DESC"
+	if len(moreKeys) >= 1 && moreKeys[0] != "" {
+		sortField = moreKeys[0]
+	}
+	if len(moreKeys) >= 2 && moreKeys[1] != "" {
+		sortOrder = moreKeys[1]
+	}
+	// normalize order
+	orderVal := -1
+	if sortOrder == "ASC" || sortOrder == "asc" {
+		orderVal = 1
+	}
+	findOptions.SetSort(bson.D{{Key: sortField, Value: orderVal}})
 
 	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {

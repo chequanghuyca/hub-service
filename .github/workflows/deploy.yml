@@ -30,6 +30,14 @@ jobs:
                   push: true
                   tags: ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
 
+            - name: Test SSH Connection
+              uses: appleboy/ssh-action@v0.1.10
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_KEY }}
+                  script: echo "SSH connected successfully"
+
             # 4. Deploy on server
             - name: Deploy on server
               uses: appleboy/ssh-action@v1.0.3

@@ -21,40 +21,40 @@ jobs:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
-            # 3. Build & Push BE image
+            # 3. Build & Push Hub Service Image
             - name: Build & Push Hub Service
               uses: docker/build-push-action@v5
               with:
                   context: .
+                  file: ./Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
-                  file: ./Dockerfile
 
-            # 4. Deploy trên server DigitalOcean
+            # 4. Deploy on server
             - name: Deploy on server
-              uses: appleboy/ssh-action@v0.1.10
+              uses: appleboy/ssh-action@v1.0.3
               with:
                   host: ${{ secrets.SSH_HOST }}
                   username: ${{ secrets.SSH_USER }}
                   key: ${{ secrets.SSH_KEY }}
                   script: |
-                      echo "Stopping old hub-service..."
+                      echo "👉 Stopping old hub-service..."
                       docker stop hub-service || true
                       docker rm hub-service || true
 
-                      echo "Cleaning old hub-service image..."
+                      echo "🧹 Cleaning old images..."
                       docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:latest || true
                       docker image prune -f
 
-                      echo "Pulling new image..."
-                      docker pull ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
+                      echo "⬇️ Pulling new image..."
+                      docker pull -q ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
 
-                      echo "Starting hub-service..."
+                      echo "🚀 Starting hub-service..."
                       docker run -d \
                         --name hub-service \
                         --restart always \
-                        -p 8081:8080 \
+                        -p 8080:8080 \
                         --env-file /root/.env \
                         ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
 
-                      echo "✅ Hub Service deployed!"
+                      echo "✅ Hub Service deployed successfully!"

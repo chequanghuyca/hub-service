@@ -1,45 +1,60 @@
-name: Deploy to Production
+name: Build and Deploy Hub Service
 
 on:
     push:
         branches:
             - main
-            - 'feature/**'
 
 jobs:
-    build:
+    build-and-deploy:
         runs-on: ubuntu-latest
+
         steps:
+            # 1. Checkout code
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
-            - name: Set up Go
-              uses: actions/setup-go@v2
+            # 2. Login Docker Hub
+            - name: Login to Docker Hub
+              uses: docker/login-action@v2
               with:
-                  go-version: '1.23.1'
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Build
-              run: go build -v ./...
-
-            - name: Test
-              run: go test -v ./...
-
-    deploy-production:
-        needs: build
-        runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/main'
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
-
-            - name: Set up Go
-              uses: actions/setup-go@v2
+            # 3. Build & Push BE image
+            - name: Build & Push Hub Service
+              uses: docker/build-push-action@v5
               with:
-                  go-version: '1.23.1'
+                  context: .
+                  push: true
+                  tags: ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
+                  file: ./Dockerfile
 
-            - name: Deploy to Render
-              run: |
-                  chmod +x ./deploy.sh
-                  ./deploy.sh ${{ secrets.SYSTEM_RENDER_API_KEY }}
-              env:
-                  SYSTEM_RENDER_API_KEY: ${{ secrets.SYSTEM_RENDER_API_KEY }}
+            # 4. Deploy trên server DigitalOcean
+            - name: Deploy on server
+              uses: appleboy/ssh-action@v0.1.10
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_KEY }}
+                  script: |
+                      echo "Stopping old hub-service..."
+                      docker stop hub-service || true
+                      docker rm hub-service || true
+
+                      echo "Cleaning old hub-service image..."
+                      docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:latest || true
+                      docker image prune -f
+
+                      echo "Pulling new image..."
+                      docker pull ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
+
+                      echo "Starting hub-service..."
+                      docker run -d \
+                        --name hub-service \
+                        --restart always \
+                        -p 8081:8080 \
+                        --env-file /root/.env \
+                        ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
+
+                      echo "✅ Hub Service deployed!"

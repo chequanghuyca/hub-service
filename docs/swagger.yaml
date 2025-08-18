@@ -1528,7 +1528,7 @@ paths:
             $ref: '#/definitions/model.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: List users
+      summary: List users (test build)
       tags:
       - users
   /api/users/me:

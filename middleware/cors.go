@@ -1,9 +1,6 @@
 package middleware
 
 import (
-	"os"
-	"strings"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -12,10 +9,11 @@ import (
 func CorsConnect() gin.HandlerFunc {
 	godotenv.Load()
 
-	origins := strings.Split(os.Getenv("CORS_ALLOW_ORIGINS"), ",")
+	// origins := strings.Split(os.Getenv("CORS_ALLOW_ORIGINS"), ",")
 	corsConfig := cors.Config{
 		// AllowOrigins:     []string{os.Getenv("BASE_URL_PORTFOLIO"), os.Getenv("BASE_URL_LOCAL"), os.Getenv("BASE_URL_DEV"), os.Getenv("BASE_URL_TRANSMASTER_PROD")},
-		AllowOrigins:     origins,
+		// AllowOrigins:     origins,
+		AllowOrigins:     []string{"http://localhost:3000", "https://www.transmaster.site"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

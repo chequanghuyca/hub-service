@@ -1270,7 +1270,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "List users",
+                "summary": "List users (test build)",
                 "parameters": [
                     {
                         "minimum": 1,

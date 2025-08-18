@@ -10,7 +10,7 @@ import (
 )
 
 // ListUsers godoc
-// @Summary List users
+// @Summary List users (test build)
 // @Description Get a list of users with pagination, sorting, and search
 // @Tags users
 // @Accept json

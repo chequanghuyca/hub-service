@@ -347,6 +347,13 @@ definitions:
       summary:
         $ref: '#/definitions/hub-service_module_score_model.UserScoreSummary'
     type: object
+  model.GetUserTranslationScoresResponse:
+    properties:
+      summaries:
+        items:
+          $ref: '#/definitions/model.TranslationSummary'
+        type: array
+    type: object
   model.ListUsersResponse:
     properties:
       data:
@@ -464,6 +471,156 @@ definitions:
     - provider
     - provider_id
     type: object
+  model.SubmitSentenceTranslationRequest:
+    properties:
+      user_translation:
+        type: string
+    required:
+    - user_translation
+    type: object
+  model.SubmitSentenceTranslationResponse:
+    properties:
+      attempt_count:
+        type: integer
+      best_score:
+        type: number
+      errors:
+        type: string
+      feedback:
+        type: string
+      is_new_best:
+        type: boolean
+      original_content:
+        type: string
+      progress_percent:
+        type: number
+      score:
+        type: number
+      suggestions:
+        type: string
+      total_user_score:
+        type: number
+      user_translation:
+        type: string
+    type: object
+  model.Translation:
+    properties:
+      category:
+        type: string
+      content:
+        description: Full text passage
+        type: string
+      created_at:
+        type: string
+      difficulty:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      source_lang:
+        type: string
+      target_lang:
+        type: string
+      title:
+        type: string
+      total_score:
+        description: Total possible score
+        type: number
+      updated_at:
+        type: string
+    type: object
+  model.TranslationCreate:
+    properties:
+      category:
+        type: string
+      content:
+        type: string
+      difficulty:
+        enum:
+        - easy
+        - medium
+        - hard
+        type: string
+      image:
+        type: string
+      source_lang:
+        type: string
+      target_lang:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - difficulty
+    - source_lang
+    - target_lang
+    - title
+    type: object
+  model.TranslationSentence:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      max_score:
+        type: number
+      sentence_index:
+        type: integer
+      translation_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.TranslationSummary:
+    properties:
+      completed_count:
+        type: integer
+      last_attempt_at:
+        type: string
+      max_possible_score:
+        type: number
+      progress_percent:
+        type: number
+      title:
+        type: string
+      total_sentences:
+        type: integer
+      total_user_score:
+        type: number
+      translation_id:
+        type: string
+    type: object
+  model.TranslationWithSentences:
+    properties:
+      sentences:
+        items:
+          $ref: '#/definitions/model.TranslationSentence'
+        type: array
+      translation:
+        $ref: '#/definitions/model.Translation'
+    type: object
+  model.TranslationWithUserProgress:
+    properties:
+      completed_count:
+        type: integer
+      progress_percent:
+        type: number
+      sentences:
+        items:
+          $ref: '#/definitions/model.TranslationSentence'
+        type: array
+      total_user_score:
+        type: number
+      translation:
+        $ref: '#/definitions/model.Translation'
+      user_scores:
+        items:
+          $ref: '#/definitions/model.UserTranslationScore'
+        type: array
+    type: object
   model.UpdateRoleRequest:
     properties:
       email:
@@ -508,6 +665,37 @@ definitions:
         example: 95.5
         type: number
       updated_at:
+        type: string
+    type: object
+  model.UserTranslationScore:
+    properties:
+      attempt_count:
+        type: integer
+      best_score:
+        type: number
+      created_at:
+        type: string
+      errors:
+        type: string
+      feedback:
+        type: string
+      id:
+        type: string
+      score:
+        type: number
+      sentence_id:
+        type: string
+      sentence_index:
+        type: integer
+      suggestions:
+        type: string
+      translation_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      user_translation:
         type: string
     type: object
   model.UserUpdate:
@@ -1337,6 +1525,244 @@ paths:
       summary: Get all sections with only id and title
       tags:
       - sections
+  /api/translations/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a translation with all its sentences. All authenticated users
+        can access this endpoint.
+      parameters:
+      - description: Translation ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TranslationWithSentences'
+              type: object
+        "400":
+          description: Bad request - Invalid translation ID
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Translation not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get a translation by ID
+      tags:
+      - translations
+  /api/translations/{id}/progress:
+    get:
+      consumes:
+      - application/json
+      description: Get a translation with user's progress and scores. All authenticated
+        users can access this endpoint.
+      parameters:
+      - description: Translation ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TranslationWithUserProgress'
+              type: object
+        "400":
+          description: Bad request - Invalid translation ID
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Translation not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get translation with user progress
+      tags:
+      - translations
+  /api/translations/{id}/sentences/{sentence_index}/translate:
+    post:
+      consumes:
+      - application/json
+      description: Submit a user's translation for a specific sentence. All authenticated
+        users can access this endpoint.
+      parameters:
+      - description: Translation ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Sentence index
+        example: 0
+        in: path
+        name: sentence_index
+        required: true
+        type: integer
+      - description: Translation request (only user_translation field required)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SubmitSentenceTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.SubmitSentenceTranslationResponse'
+              type: object
+        "400":
+          description: Bad request - Invalid translation ID or sentence index
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "404":
+          description: Translation or sentence not found
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Submit sentence translation
+      tags:
+      - translations
+  /api/translations/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new translation with sentences. Only admin and super_admin
+        can access this endpoint.
+      parameters:
+      - description: Translation data
+        in: body
+        name: translation
+        required: true
+        schema:
+          $ref: '#/definitions/model.TranslationCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created translation
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Translation'
+              type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "403":
+          description: Forbidden - Only admin and super_admin can access
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Create a new translation
+      tags:
+      - translations
+  /api/translations/user/{user_id}/scores:
+    get:
+      consumes:
+      - application/json
+      description: Get all translation summaries for a user. All authenticated users
+        can access this endpoint.
+      parameters:
+      - description: User ID
+        example: '"62b4c3789196e8a159933552"'
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.GetUserTranslationScoresResponse'
+              type: object
+        "400":
+          description: Bad request - Invalid user ID
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/common.AppError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/common.AppError'
+      security:
+      - BearerAuth: []
+      summary: Get user translation scores
+      tags:
+      - translations
   /api/upload/r2-image:
     post:
       consumes:

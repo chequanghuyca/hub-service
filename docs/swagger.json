@@ -1178,6 +1178,388 @@
                 }
             }
         },
+        "/api/translations/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new translation with sentences. Only admin and super_admin can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translations"
+                ],
+                "summary": "Create a new translation",
+                "parameters": [
+                    {
+                        "description": "Translation data",
+                        "name": "translation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TranslationCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created translation",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Translation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Only admin and super_admin can access",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/translations/user/{user_id}/scores": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all translation summaries for a user. All authenticated users can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translations"
+                ],
+                "summary": "Get user translation scores",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"62b4c3789196e8a159933552\"",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.GetUserTranslationScoresResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/translations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a translation with all its sentences. All authenticated users can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translations"
+                ],
+                "summary": "Get a translation by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"62b4c3789196e8a159933552\"",
+                        "description": "Translation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.TranslationWithSentences"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid translation ID",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Translation not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/translations/{id}/progress": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a translation with user's progress and scores. All authenticated users can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translations"
+                ],
+                "summary": "Get translation with user progress",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"62b4c3789196e8a159933552\"",
+                        "description": "Translation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.TranslationWithUserProgress"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid translation ID",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Translation not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/translations/{id}/sentences/{sentence_index}/translate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submit a user's translation for a specific sentence. All authenticated users can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "translations"
+                ],
+                "summary": "Submit sentence translation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"62b4c3789196e8a159933552\"",
+                        "description": "Translation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "example": 0,
+                        "description": "Sentence index",
+                        "name": "sentence_index",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Translation request (only user_translation field required)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.SubmitSentenceTranslationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.SubmitSentenceTranslationResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid translation ID or sentence index",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Translation or sentence not found",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/common.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/upload/r2-image": {
             "post": {
                 "security": [
@@ -2215,6 +2597,17 @@
                 }
             }
         },
+        "model.GetUserTranslationScoresResponse": {
+            "type": "object",
+            "properties": {
+                "summaries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TranslationSummary"
+                    }
+                }
+            }
+        },
         "model.ListUsersResponse": {
             "type": "object",
             "properties": {
@@ -2392,6 +2785,231 @@
                 }
             }
         },
+        "model.SubmitSentenceTranslationRequest": {
+            "type": "object",
+            "required": [
+                "user_translation"
+            ],
+            "properties": {
+                "user_translation": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SubmitSentenceTranslationResponse": {
+            "type": "object",
+            "properties": {
+                "attempt_count": {
+                    "type": "integer"
+                },
+                "best_score": {
+                    "type": "number"
+                },
+                "errors": {
+                    "type": "string"
+                },
+                "feedback": {
+                    "type": "string"
+                },
+                "is_new_best": {
+                    "type": "boolean"
+                },
+                "original_content": {
+                    "type": "string"
+                },
+                "progress_percent": {
+                    "type": "number"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "suggestions": {
+                    "type": "string"
+                },
+                "total_user_score": {
+                    "type": "number"
+                },
+                "user_translation": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Translation": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "content": {
+                    "description": "Full text passage",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "target_lang": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "total_score": {
+                    "description": "Total possible score",
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TranslationCreate": {
+            "type": "object",
+            "required": [
+                "content",
+                "difficulty",
+                "source_lang",
+                "target_lang",
+                "title"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string",
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ]
+                },
+                "image": {
+                    "type": "string"
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "target_lang": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TranslationSentence": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_score": {
+                    "type": "number"
+                },
+                "sentence_index": {
+                    "type": "integer"
+                },
+                "translation_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TranslationSummary": {
+            "type": "object",
+            "properties": {
+                "completed_count": {
+                    "type": "integer"
+                },
+                "last_attempt_at": {
+                    "type": "string"
+                },
+                "max_possible_score": {
+                    "type": "number"
+                },
+                "progress_percent": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "total_sentences": {
+                    "type": "integer"
+                },
+                "total_user_score": {
+                    "type": "number"
+                },
+                "translation_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TranslationWithSentences": {
+            "type": "object",
+            "properties": {
+                "sentences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TranslationSentence"
+                    }
+                },
+                "translation": {
+                    "$ref": "#/definitions/model.Translation"
+                }
+            }
+        },
+        "model.TranslationWithUserProgress": {
+            "type": "object",
+            "properties": {
+                "completed_count": {
+                    "type": "integer"
+                },
+                "progress_percent": {
+                    "type": "number"
+                },
+                "sentences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TranslationSentence"
+                    }
+                },
+                "total_user_score": {
+                    "type": "number"
+                },
+                "translation": {
+                    "$ref": "#/definitions/model.Translation"
+                },
+                "user_scores": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.UserTranslationScore"
+                    }
+                }
+            }
+        },
         "model.UpdateRoleRequest": {
             "type": "object",
             "required": [
@@ -2456,6 +3074,53 @@
                     "example": 95.5
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UserTranslationScore": {
+            "type": "object",
+            "properties": {
+                "attempt_count": {
+                    "type": "integer"
+                },
+                "best_score": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "string"
+                },
+                "feedback": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "sentence_id": {
+                    "type": "string"
+                },
+                "sentence_index": {
+                    "type": "integer"
+                },
+                "suggestions": {
+                    "type": "string"
+                },
+                "translation_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_translation": {
                     "type": "string"
                 }
             }

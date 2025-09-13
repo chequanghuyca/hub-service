@@ -20,7 +20,6 @@ func SingleSendEmail(to string, subject string, body string) error {
 	smtpEmail := os.Getenv("SYSTEM_EMAIL")
 	smtpPassword := os.Getenv("SYSTEM_EMAIL_SERVER")
 
-	// Convert port to integer
 	smtpPort, err := strconv.Atoi(smtpPortStr)
 	if err != nil {
 		log.Printf("Invalid SYSTEM_EMAIL_PORT: %s, using default 587", smtpPortStr)

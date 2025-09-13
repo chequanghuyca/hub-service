@@ -41,19 +41,19 @@ jobs:
                   username: ${{ secrets.SSH_USER }}
                   key: ${{ secrets.SSH_KEY }}
                   script: |
-                      echo "🛑 Stopping old hub-service..."
+                      echo "Stopping old hub-service..."
                       docker stop hub-service || true
                       docker rm hub-service || true
 
-                      echo "🧹 Cleaning old hub-service image..."
+                      echo "Cleaning old hub-service image..."
                       docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:latest || true
                       docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }} || true
                       docker image prune -f
 
-                      echo "📥 Pulling new image..."
+                      echo "Pulling new image..."
                       docker pull ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-                      echo "🚀 Starting hub-service..."
+                      echo "Starting hub-service..."
                       docker run -d \
                         --name hub-service \
                         --restart always \
@@ -61,4 +61,4 @@ jobs:
                         --env-file /root/hub-service.env \
                         ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-                      echo "✅ Hub Service deployed successfully!"
+                      echo "Hub Service deployed successfully!"

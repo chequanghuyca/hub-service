@@ -45,12 +45,14 @@ func ResponseEmailPortfolio(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, emailmodel.ErrSendEmail(err))
+			return
 		}
 
 		errSendMe := storageemail.ResponseMeEmail(req.Message)
 
 		if errSendMe != nil {
 			c.JSON(http.StatusInternalServerError, emailmodel.ErrSendEmail(errSendMe))
+			return
 		}
 
 		c.JSON(http.StatusOK, emailmodel.SendEmaiSuccess)

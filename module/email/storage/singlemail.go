@@ -29,7 +29,8 @@ func SingleSendEmail(to string, subject string, body string) error {
 	log.Println("Sending email to", dialer)
 
 	if err := dialer.DialAndSend(mailer); err != nil {
-		emailmodel.ErrSendEmail(err)
+		log.Printf("Failed to send email to %s: %v", to, err)
+		return emailmodel.ErrSendEmail(err)
 	}
 
 	log.Println("Email sent successfully to", to)

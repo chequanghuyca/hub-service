@@ -3,7 +3,6 @@ package middleware
 import (
 	"hub-service/core/appctx"
 	challengeTransport "hub-service/module/challenge/transport"
-	ginemail "hub-service/module/email/transport"
 	scoreTransport "hub-service/module/score/transport"
 	sectionTransport "hub-service/module/section/transport"
 	translationTransport "hub-service/module/translation/transport"
@@ -23,7 +22,6 @@ func ApiServices(appCtx appctx.AppContext, r *gin.Engine) {
 	})
 
 	ginuser.RegisterRoutes(appCtx, v1)
-	ginemail.RegisterRoutes(appCtx, v1)
 	challengeTransport.RegisterRoutes(v1, appCtx)
 	scoreTransport.RegisterRoutes(v1, appCtx)
 	sectionTransport.RegisterRoutes(v1, appCtx)

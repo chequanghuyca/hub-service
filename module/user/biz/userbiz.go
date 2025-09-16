@@ -1,22 +1,27 @@
 package biz
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"hub-service/common"
 	"hub-service/core/appctx"
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
-	"hub-service/module/email/service"
 	scoremodel "hub-service/module/score/model"
 	scorestorage "hub-service/module/score/storage"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
 	hash "hub-service/utils/hash"
+	"io"
+	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -25,7 +30,6 @@ type UserBiz struct {
 	scoreStore    *scorestorage.Storage
 	hasher        hash.Hasher
 	tokenProvider tokenprovider.Provider
-	emailService  *service.WelcomeEmailService
 }
 
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
@@ -34,7 +38,6 @@ func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
 		scoreStore:    scorestorage.NewStorage(appCtx.GetDatabase()),
 		hasher:        hash.NewMd5Hash(),
 		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
-		emailService:  service.NewWelcomeEmailService(),
 	}
 }
 
@@ -82,7 +85,7 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	// Send welcome email if this is the first login
 	if isFirstLogin {
 		go func() {
-			err := biz.emailService.SendWelcomeEmail(user.Name, user.Email)
+			err := NewWelcomeEmailService().SendWelcomeEmail(user.Name, user.Email)
 			if err != nil {
 				// Log error but don't fail the login
 			}
@@ -381,7 +384,7 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 	// Send welcome email if this is a new user
 	if isNewUser {
 		go func() {
-			err := biz.emailService.SendWelcomeEmail(user.Name, user.Email)
+			err := NewWelcomeEmailService().SendWelcomeEmail(user.Name, user.Email)
 			if err != nil {
 				// Log error but don't fail the login
 			}
@@ -421,4 +424,76 @@ func (biz *UserBiz) StoreUpdateRole(ctx context.Context, id primitive.ObjectID, 
 
 func (biz *UserBiz) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	return biz.store.GetByEmail(ctx, email)
+}
+
+type WelcomeEmailService struct{}
+
+func NewWelcomeEmailService() *WelcomeEmailService {
+	return &WelcomeEmailService{}
+}
+
+func (s *WelcomeEmailService) SendWelcomeEmail(userName, userEmail string) error {
+	godotenv.Load()
+
+	// Get external email service configuration
+	baseUrl := os.Getenv("SYSTEM_EMAIL_SERVICE_BASE_URL")
+	apiKey := os.Getenv("SYSTEM_EMAIL_SERVICE_API_KEY")
+	loginUrl := os.Getenv("BASE_URL_TRANSMASTER_PROD")
+
+	if baseUrl == "" {
+		return fmt.Errorf("SYSTEM_EMAIL_SERVICE_BASE_URL environment variable is required")
+	}
+	if apiKey == "" {
+		return fmt.Errorf("SYSTEM_EMAIL_SERVICE_API_KEY environment variable is required")
+	}
+	if loginUrl == "" {
+		loginUrl = "https://transmaster.site"
+	}
+
+	// Prepare request payload
+	requestData := map[string]string{
+		"email":    userEmail,
+		"name":     userName,
+		"loginUrl": loginUrl,
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request data: %w", err)
+	}
+
+	// Create HTTP request
+	url := baseUrl + "/api/email/welcome-user"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", apiKey)
+
+	// Send request
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to call external email service: %v", err)
+		return fmt.Errorf("failed to call external email service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("External email service returned error: status %d, body: %s", resp.StatusCode, string(body))
+		return fmt.Errorf("external email service error: status %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	log.Printf("Welcome email sent successfully to %s via external service", userEmail)
+	return nil
 }

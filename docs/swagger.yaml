@@ -2252,6 +2252,51 @@ paths:
       summary: Update user
       tags:
       - users
+  /api/users/auth/google/callback:
+    get:
+      consumes:
+      - application/json
+      description: Processes the OAuth callback from Google and creates/logs in user
+      parameters:
+      - description: Authorization code from Google
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State parameter for CSRF protection
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to frontend with token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Handle Google OAuth callback
+      tags:
+      - users
+  /api/users/auth/google/login:
+    get:
+      consumes:
+      - application/json
+      description: Redirects user to Google OAuth consent page
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to Google OAuth
+          schema:
+            type: string
+      summary: Initiate Google OAuth login
+      tags:
+      - users
   /api/users/list:
     get:
       consumes:

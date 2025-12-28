@@ -3,12 +3,14 @@ package appctx
 import (
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
+	"hub-service/core/oauth"
 	"hub-service/infrastructure/database/database"
 	"hub-service/infrastructure/database/redis"
 	"hub-service/infrastructure/external/deepl"
 	"hub-service/infrastructure/messaging/kafka"
 	"log"
 	"os"
+	"time"
 
 	deeplgo "github.com/bounoable/deepl"
 )
@@ -21,6 +23,8 @@ type AppContext interface {
 	GetKafka() *kafka.KafkaClient
 	GetRedis() *redis.RedisClient
 	GetEnv(key string) string
+	GetGoogleOAuth() *oauth.GoogleOAuthProvider
+	GetStateManager() *oauth.StateManager
 }
 
 type appContext struct {
@@ -29,11 +33,15 @@ type appContext struct {
 	tokenProvider tokenprovider.Provider
 	deeplClient   *deeplgo.Client
 	kafkaClient   *kafka.KafkaClient
+	googleOAuth   *oauth.GoogleOAuthProvider
+	stateManager  *oauth.StateManager
 }
 
 func NewAppContext(secretKey string, db *database.Database) *appContext {
 	tokenProvider := jwt.NewProvider(secretKey)
 	deeplClient := deepl.NewClient()
+	googleOAuth := oauth.NewGoogleOAuthProvider()
+	stateManager := oauth.NewStateManager(10 * time.Minute) // 10 minutes TTL
 
 	// Initialize Kafka (optional)
 	var kafkaClient *kafka.KafkaClient
@@ -51,6 +59,8 @@ func NewAppContext(secretKey string, db *database.Database) *appContext {
 		tokenProvider: tokenProvider,
 		deeplClient:   deeplClient,
 		kafkaClient:   kafkaClient,
+		googleOAuth:   googleOAuth,
+		stateManager:  stateManager,
 	}
 }
 
@@ -85,3 +95,10 @@ func (appCtx *appContext) GetEnv(key string) string {
 	return os.Getenv(key)
 }
 
+func (ctx *appContext) GetGoogleOAuth() *oauth.GoogleOAuthProvider {
+	return ctx.googleOAuth
+}
+
+func (ctx *appContext) GetStateManager() *oauth.StateManager {
+	return ctx.stateManager
+}

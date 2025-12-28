@@ -14,8 +14,12 @@ type Provider interface {
 	Generate(data TokenPayload, expiry int) (*Token, error)
 	// GenerateAccessToken generates only a new access token.
 	GenerateAccessToken(data TokenPayload, expiry int) (string, error)
+	// GenerateRefreshToken generates a refresh token with longer expiry.
+	GenerateRefreshToken(data TokenPayload, expiry int) (string, error)
 	// Validate validates a token string and returns its payload.
 	Validate(token string) (*TokenPayload, error)
+	// ValidateRefreshToken validates a refresh token.
+	ValidateRefreshToken(token string) (*TokenPayload, error)
 }
 
 var (

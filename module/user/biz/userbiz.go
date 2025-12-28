@@ -431,6 +431,130 @@ func (biz *UserBiz) GetUserByEmail(ctx context.Context, email string) (*model.Us
 	return biz.store.GetByEmail(ctx, email)
 }
 
+// SocialLoginOAuth handles OAuth flow login (already verified by OAuth provider)
+// This is used by GoogleCallback - no need to verify token again since Google already validated
+func (biz *UserBiz) SocialLoginOAuth(ctx context.Context, req *model.SocialLoginRequest) (*model.LoginResponse, error) {
+	// Find or create user
+	user, err := biz.store.GetByEmail(ctx, req.Email)
+	isNewUser := false
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		// Create new user
+		userCreate := &model.UserCreate{
+			Email:      req.Email,
+			Name:       req.Name,
+			Avatar:     req.Avatar,
+			Role:       common.RoleClient,
+			Provider:   req.Provider,
+			ProviderID: req.ProviderID,
+		}
+		user, err = biz.store.Create(ctx, userCreate)
+		if err != nil {
+			return nil, err
+		}
+		isNewUser = true
+	} else {
+		// Update existing user
+		update := false
+		updateData := make(map[string]interface{})
+
+		// Preserve user-edited fields: only hydrate from provider if currently empty
+		if user.Name == "" && req.Name != "" {
+			updateData["name"] = req.Name
+			update = true
+		}
+		if user.Avatar == "" && req.Avatar != "" {
+			updateData["avatar"] = req.Avatar
+			update = true
+		}
+
+		// Always keep provider metadata up to date
+		if user.Provider != req.Provider {
+			updateData["provider"] = req.Provider
+			update = true
+		}
+		if user.ProviderID != req.ProviderID {
+			updateData["provider_id"] = req.ProviderID
+			update = true
+		}
+		if update {
+			if err := biz.store.UpdateFields(ctx, user.ID, updateData); err == nil {
+				// cập nhật lại user struct với dữ liệu mới
+				if v, ok := updateData["name"]; ok {
+					user.Name = v.(string)
+				}
+				if v, ok := updateData["avatar"]; ok {
+					user.Avatar = v.(string)
+				}
+				if v, ok := updateData["provider"]; ok {
+					user.Provider = v.(string)
+				}
+				if v, ok := updateData["provider_id"]; ok {
+					user.ProviderID = v.(string)
+				}
+			}
+		}
+
+		// Update login status for existing user
+		_, err = biz.store.UpdateLoginStatus(ctx, user.ID)
+		if err != nil {
+			// Log error but don't fail the login
+		}
+	}
+
+	// Send welcome email if this is a new user
+	if isNewUser {
+		go func() {
+			err := biz.sendWelcomeEmail(context.Background(), user.Name, user.Email)
+			if err != nil {
+				log.Printf("Failed to send welcome email: %v", err)
+			}
+		}()
+	}
+
+	payload := tokenprovider.TokenPayload{
+		UserID:    user.ID,
+		Role:      user.Role,
+		Email:     user.Email,
+		FirstName: user.Name,
+	}
+
+	// AccessToken: 1 ngày = 24 * 60 * 60 = 86400 seconds
+	accessTokenExpiry := 24 * 60 * 60
+	accessToken, err := biz.tokenProvider.GenerateAccessToken(payload, accessTokenExpiry)
+	if err != nil {
+		return nil, errors.New("failed to generate access token")
+	}
+
+	// RefreshToken: 1 tháng = 30 * 24 * 60 * 60 = 2592000 seconds
+	refreshTokenExpiry := 30 * 24 * 60 * 60
+	refreshToken, err := biz.tokenProvider.GenerateRefreshToken(payload, refreshTokenExpiry)
+	if err != nil {
+		return nil, errors.New("failed to generate refresh token")
+	}
+
+	loginResponse := &model.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User: model.UserResponse{
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Phone:      user.Phone,
+			Bio:        user.Bio,
+			Role:       user.Role,
+			TotalScore: 0,
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
+		},
+	}
+	return loginResponse, nil
+}
+
 // sendWelcomeEmail sends a welcome email to new user using internal email service
 func (biz *UserBiz) sendWelcomeEmail(ctx context.Context, userName, userEmail string) error {
 	loginUrl := os.Getenv("BASE_URL_TRANSMASTER_PROD")

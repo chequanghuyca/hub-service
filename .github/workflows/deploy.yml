@@ -67,13 +67,15 @@ jobs:
                   script: |
                       cd /app/hub-service
 
+                      echo "Updating .env for docker-compose..."
+                      echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
+                      echo "TAG=${{ github.sha }}" >> .env
+
                       echo "Pulling latest images..."
-                      export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-                      export TAG=${{ github.sha }}
                       docker compose pull
 
                       echo "Starting services..."
-                      docker compose up -d --remove-orphans
+                      docker compose up -d --force-recreate --remove-orphans
 
                       echo "Pruning old images..."
                       docker image prune -f

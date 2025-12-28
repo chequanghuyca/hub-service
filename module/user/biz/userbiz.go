@@ -1,27 +1,26 @@
 package biz
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"hub-service/common"
 	"hub-service/core/appctx"
 	"hub-service/core/auth/tokenprovider"
 	"hub-service/core/auth/tokenprovider/jwt"
+	emailbiz "hub-service/module/email/biz"
+	emailmodel "hub-service/module/email/model"
+	"hub-service/module/email/repository"
+	"hub-service/module/email/templates"
 	scoremodel "hub-service/module/score/model"
 	scorestorage "hub-service/module/score/storage"
 	"hub-service/module/user/model"
 	"hub-service/module/user/storage"
 	hash "hub-service/utils/hash"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -30,14 +29,20 @@ type UserBiz struct {
 	scoreStore    *scorestorage.Storage
 	hasher        hash.Hasher
 	tokenProvider tokenprovider.Provider
+	emailBiz      emailbiz.EmailBusiness
 }
 
 func NewUserBiz(appCtx appctx.AppContext) *UserBiz {
+	// Initialize email repository and business layer
+	emailRepo := repository.NewEmailRepository(appCtx.GetDatabase().MongoDB.Database)
+	emailBusiness := emailbiz.NewEmailBusiness(emailRepo, appCtx.GetKafka(), appCtx.GetRedis())
+
 	return &UserBiz{
 		store:         storage.NewUserStorage(appCtx),
 		scoreStore:    scorestorage.NewStorage(appCtx.GetDatabase()),
 		hasher:        hash.NewMd5Hash(),
 		tokenProvider: jwt.NewProvider(appCtx.GetSecretKey()),
+		emailBiz:      emailBusiness,
 	}
 }
 
@@ -85,9 +90,9 @@ func (biz *UserBiz) Login(ctx context.Context, email, password string) (*model.L
 	// Send welcome email if this is the first login
 	if isFirstLogin {
 		go func() {
-			err := NewWelcomeEmailService().SendWelcomeEmail(user.Name, user.Email)
+			err := biz.sendWelcomeEmail(context.Background(), user.Name, user.Email)
 			if err != nil {
-				// Log error but don't fail the login
+				log.Printf("Failed to send welcome email: %v", err)
 			}
 		}()
 	}
@@ -384,9 +389,9 @@ func (biz *UserBiz) SocialLogin(ctx context.Context, req *model.SocialLoginReque
 	// Send welcome email if this is a new user
 	if isNewUser {
 		go func() {
-			err := NewWelcomeEmailService().SendWelcomeEmail(user.Name, user.Email)
+			err := biz.sendWelcomeEmail(context.Background(), user.Name, user.Email)
 			if err != nil {
-				// Log error but don't fail the login
+				log.Printf("Failed to send welcome email: %v", err)
 			}
 		}()
 	}
@@ -426,74 +431,156 @@ func (biz *UserBiz) GetUserByEmail(ctx context.Context, email string) (*model.Us
 	return biz.store.GetByEmail(ctx, email)
 }
 
-type WelcomeEmailService struct{}
+// SocialLoginOAuth handles OAuth flow login (already verified by OAuth provider)
+// This is used by GoogleCallback - no need to verify token again since Google already validated
+func (biz *UserBiz) SocialLoginOAuth(ctx context.Context, req *model.SocialLoginRequest) (*model.LoginResponse, error) {
+	// Find or create user
+	user, err := biz.store.GetByEmail(ctx, req.Email)
+	isNewUser := false
+	if err != nil {
+		return nil, err
+	}
 
-func NewWelcomeEmailService() *WelcomeEmailService {
-	return &WelcomeEmailService{}
+	if user == nil {
+		// Create new user
+		userCreate := &model.UserCreate{
+			Email:      req.Email,
+			Name:       req.Name,
+			Avatar:     req.Avatar,
+			Role:       common.RoleClient,
+			Provider:   req.Provider,
+			ProviderID: req.ProviderID,
+		}
+		user, err = biz.store.Create(ctx, userCreate)
+		if err != nil {
+			return nil, err
+		}
+		isNewUser = true
+	} else {
+		// Update existing user
+		update := false
+		updateData := make(map[string]interface{})
+
+		// Preserve user-edited fields: only hydrate from provider if currently empty
+		if user.Name == "" && req.Name != "" {
+			updateData["name"] = req.Name
+			update = true
+		}
+		if user.Avatar == "" && req.Avatar != "" {
+			updateData["avatar"] = req.Avatar
+			update = true
+		}
+
+		// Always keep provider metadata up to date
+		if user.Provider != req.Provider {
+			updateData["provider"] = req.Provider
+			update = true
+		}
+		if user.ProviderID != req.ProviderID {
+			updateData["provider_id"] = req.ProviderID
+			update = true
+		}
+		if update {
+			if err := biz.store.UpdateFields(ctx, user.ID, updateData); err == nil {
+				// cập nhật lại user struct với dữ liệu mới
+				if v, ok := updateData["name"]; ok {
+					user.Name = v.(string)
+				}
+				if v, ok := updateData["avatar"]; ok {
+					user.Avatar = v.(string)
+				}
+				if v, ok := updateData["provider"]; ok {
+					user.Provider = v.(string)
+				}
+				if v, ok := updateData["provider_id"]; ok {
+					user.ProviderID = v.(string)
+				}
+			}
+		}
+
+		// Update login status for existing user
+		_, err = biz.store.UpdateLoginStatus(ctx, user.ID)
+		if err != nil {
+			// Log error but don't fail the login
+		}
+	}
+
+	// Send welcome email if this is a new user
+	if isNewUser {
+		go func() {
+			err := biz.sendWelcomeEmail(context.Background(), user.Name, user.Email)
+			if err != nil {
+				log.Printf("Failed to send welcome email: %v", err)
+			}
+		}()
+	}
+
+	payload := tokenprovider.TokenPayload{
+		UserID:    user.ID,
+		Role:      user.Role,
+		Email:     user.Email,
+		FirstName: user.Name,
+	}
+
+	// AccessToken: 1 ngày = 24 * 60 * 60 = 86400 seconds
+	accessTokenExpiry := 24 * 60 * 60
+	accessToken, err := biz.tokenProvider.GenerateAccessToken(payload, accessTokenExpiry)
+	if err != nil {
+		return nil, errors.New("failed to generate access token")
+	}
+
+	// RefreshToken: 1 tháng = 30 * 24 * 60 * 60 = 2592000 seconds
+	refreshTokenExpiry := 30 * 24 * 60 * 60
+	refreshToken, err := biz.tokenProvider.GenerateRefreshToken(payload, refreshTokenExpiry)
+	if err != nil {
+		return nil, errors.New("failed to generate refresh token")
+	}
+
+	loginResponse := &model.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User: model.UserResponse{
+			ID:         user.ID,
+			Email:      user.Email,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+			Phone:      user.Phone,
+			Bio:        user.Bio,
+			Role:       user.Role,
+			TotalScore: 0,
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
+		},
+	}
+	return loginResponse, nil
 }
 
-func (s *WelcomeEmailService) SendWelcomeEmail(userName, userEmail string) error {
-	godotenv.Load()
-
-	// Get external email service configuration
-	baseUrl := os.Getenv("SYSTEM_EMAIL_SERVICE_BASE_URL")
-	apiKey := os.Getenv("SYSTEM_EMAIL_SERVICE_API_KEY")
+// sendWelcomeEmail sends a welcome email to new user using internal email service
+func (biz *UserBiz) sendWelcomeEmail(ctx context.Context, userName, userEmail string) error {
 	loginUrl := os.Getenv("BASE_URL_TRANSMASTER_PROD")
-
-	if baseUrl == "" {
-		return fmt.Errorf("SYSTEM_EMAIL_SERVICE_BASE_URL environment variable is required")
-	}
-	if apiKey == "" {
-		return fmt.Errorf("SYSTEM_EMAIL_SERVICE_API_KEY environment variable is required")
-	}
 	if loginUrl == "" {
 		loginUrl = "https://transmaster.site"
 	}
 
-	// Prepare request payload
-	requestData := map[string]string{
-		"email":    userEmail,
-		"name":     userName,
-		"loginUrl": loginUrl,
-	}
+	// Generate welcome email HTML using template
+	htmlBody := templates.GetWelcomeEmailHTML(templates.WelcomeEmailData{
+		Name:     userName,
+		LoginUrl: loginUrl,
+	})
 
-	jsonData, err := json.Marshal(requestData)
+	// Queue email via internal email service
+	_, err := biz.emailBiz.QueueEmail(ctx, &emailmodel.SendEmailRequest{
+		To:       []string{userEmail},
+		Subject:  templates.GetWelcomeEmailSubject(),
+		HTMLBody: htmlBody,
+		Priority: emailmodel.EmailPriorityHigh,
+	})
+
 	if err != nil {
-		return fmt.Errorf("failed to marshal request data: %w", err)
+		log.Printf("Failed to queue welcome email for %s: %v", userEmail, err)
+		return err
 	}
 
-	// Create HTTP request
-	url := baseUrl + "/api/email/welcome-user"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	// Set headers
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-api-key", apiKey)
-
-	// Send request
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Failed to call external email service: %v", err)
-		return fmt.Errorf("failed to call external email service: %w", err)
-	}
-	defer resp.Body.Close()
-
-	// Read response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response: %w", err)
-	}
-
-	// Check response status
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("External email service returned error: status %d, body: %s", resp.StatusCode, string(body))
-		return fmt.Errorf("external email service error: status %d, body: %s", resp.StatusCode, string(body))
-	}
-
-	log.Printf("Welcome email sent successfully to %s via external service", userEmail)
+	log.Printf("Welcome email queued successfully for %s", userEmail)
 	return nil
 }

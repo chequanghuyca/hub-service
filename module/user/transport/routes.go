@@ -11,8 +11,13 @@ import (
 func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
+		// OAuth routes (public)
+		users.GET("/auth/google/login", GoogleLogin(appCtx))
+		users.GET("/auth/google/callback", GoogleCallback(appCtx))
+
+		// Legacy routes (backward compatible)
 		users.GET("/list", ListUsers(appCtx))
-		users.POST("/social-login", SocialLogin(appCtx))
+		users.POST("/social-login", SocialLogin(appCtx)) // Keep for backward compatibility
 		users.POST("/refresh", RefreshToken(appCtx))
 
 		protected := users.Group("/")
@@ -27,3 +32,4 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 		}
 	}
 }
+

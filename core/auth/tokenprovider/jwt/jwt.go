@@ -168,6 +168,7 @@ func (p *jwtProvider) GenerateAccessToken(data tokenprovider.TokenPayload, expir
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
 			IssuedAt:  time.Now().Unix(),
+			Issuer:    "access_token",
 		},
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
@@ -177,4 +178,42 @@ func (p *jwtProvider) GenerateAccessToken(data tokenprovider.TokenPayload, expir
 	}
 
 	return accessTokenString, nil
+}
+
+// GenerateRefreshToken generates a refresh token with longer expiry
+func (p *jwtProvider) GenerateRefreshToken(data tokenprovider.TokenPayload, expiry int) (string, error) {
+	refreshTokenClaims := &customClaims{
+		Payload: struct {
+			UserID    interface{} `json:"user_id"`
+			Role      string      `json:"role"`
+			Email     string      `json:"email,omitempty"`
+			FirstName string      `json:"first_name,omitempty"`
+			LastName  string      `json:"last_name,omitempty"`
+		}{
+			UserID:    data.UserID,
+			Role:      data.Role,
+			Email:     data.Email,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+		},
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Issuer:    "refresh_token",
+		},
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
+	refreshTokenString, err := refreshToken.SignedString([]byte(p.secret))
+	if err != nil {
+		return "", tokenprovider.ErrEncodingToken
+	}
+
+	return refreshTokenString, nil
+}
+
+// ValidateRefreshToken validates a refresh token
+func (p *jwtProvider) ValidateRefreshToken(tokenStr string) (*tokenprovider.TokenPayload, error) {
+	// Same validation logic as Validate
+	return p.Validate(tokenStr)
 }

@@ -75,6 +75,8 @@ jobs:
                       docker compose pull
 
                       echo "Starting services..."
+                      # Migration: Remove old container if exists
+                      docker rm -f hub-service || true
                       docker compose up -d --force-recreate --remove-orphans
 
                       echo "Pruning old images..."

@@ -33,7 +33,7 @@ jobs:
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-            # 4. Deploy trên server DigitalOcean
+            # 4. Deploy trên server iNet cloud
             - name: Deploy on server
               uses: appleboy/ssh-action@v0.1.10
               with:

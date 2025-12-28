@@ -31,6 +31,15 @@ definitions:
         example: success
         type: string
     type: object
+  common.SuccessResponse:
+    properties:
+      data: {}
+      filter: {}
+      meta: {}
+      status:
+        example: success
+        type: string
+    type: object
   hub-service_module_score_model.UserScoreSummary:
     properties:
       average_score:
@@ -94,6 +103,56 @@ definitions:
         type: integer
       total_pages:
         type: integer
+    type: object
+  model.CampaignListResponse:
+    properties:
+      campaigns:
+        items:
+          $ref: '#/definitions/model.CampaignResponse'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  model.CampaignResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      error:
+        type: string
+      failed_emails:
+        type: integer
+      html_body:
+        type: string
+      id:
+        type: string
+      processed_at:
+        type: string
+      scheduled_at:
+        type: string
+      sent_emails:
+        type: integer
+      status:
+        type: string
+      subject:
+        type: string
+      test_emails:
+        items:
+          type: string
+        type: array
+      test_mode:
+        type: boolean
+      total_emails:
+        type: integer
+      updated_at:
+        type: string
     type: object
   model.ChallengeCreate:
     description: Required fields for creating a new translation challenge.
@@ -265,8 +324,81 @@ definitions:
       user_best_score:
         type: number
     type: object
+  model.CreateCampaignRequest:
+    properties:
+      html_body:
+        type: string
+      scheduled_at:
+        description: Unix timestamp in seconds
+        type: integer
+      subject:
+        type: string
+      test_emails:
+        items:
+          type: string
+        type: array
+    required:
+    - html_body
+    - scheduled_at
+    - subject
+    type: object
   model.DeleteUserResponse:
     properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  model.EmailMessage:
+    properties:
+      bcc:
+        items:
+          type: string
+        type: array
+      body:
+        type: string
+      cc:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: string
+      error:
+        type: string
+      from:
+        type: string
+      htmlBody:
+        type: string
+      id:
+        type: string
+      maxRetries:
+        type: integer
+      priority:
+        type: string
+      retryCount:
+        type: integer
+      sentAt:
+        type: string
+      status:
+        type: string
+      subject:
+        type: string
+      template:
+        type: string
+      templateData:
+        additionalProperties: true
+        type: object
+      to:
+        items:
+          type: string
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  model.EmailResponse:
+    properties:
+      id:
+        type: string
       message:
         type: string
       status:
@@ -400,6 +532,46 @@ definitions:
         $ref: '#/definitions/model.Section'
       user_score:
         $ref: '#/definitions/hub-service_module_section_model.UserScoreSummary'
+    type: object
+  model.SendBulkEmailRequest:
+    properties:
+      emails:
+        items:
+          $ref: '#/definitions/model.SendEmailRequest'
+        type: array
+    required:
+    - emails
+    type: object
+  model.SendEmailRequest:
+    properties:
+      bcc:
+        items:
+          type: string
+        type: array
+      body:
+        type: string
+      cc:
+        items:
+          type: string
+        type: array
+      htmlBody:
+        type: string
+      priority:
+        type: string
+      subject:
+        type: string
+      template:
+        type: string
+      templateData:
+        additionalProperties: true
+        type: object
+      to:
+        items:
+          type: string
+        type: array
+    required:
+    - subject
+    - to
     type: object
   model.SocialLoginRequest:
     properties:
@@ -570,6 +742,20 @@ definitions:
       user_scores:
         items:
           $ref: '#/definitions/model.UserTranslationScore'
+        type: array
+    type: object
+  model.UpdateCampaignRequest:
+    properties:
+      html_body:
+        type: string
+      scheduled_at:
+        description: Unix timestamp in seconds
+        type: integer
+      subject:
+        type: string
+      test_emails:
+        items:
+          type: string
         type: array
     type: object
   model.UpdateRoleRequest:
@@ -1003,6 +1189,294 @@ paths:
       summary: List challenges
       tags:
       - challenges
+  /api/email/campaigns:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of email campaigns
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CampaignListResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List email campaigns
+      tags:
+      - Email Campaigns
+    post:
+      consumes:
+      - application/json
+      description: Create a new email campaign to be sent at scheduled time
+      parameters:
+      - description: Campaign request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CampaignResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a scheduled email campaign
+      tags:
+      - Email Campaigns
+  /api/email/campaigns/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel a pending campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel a campaign
+      tags:
+      - Email Campaigns
+    get:
+      consumes:
+      - application/json
+      description: Get a specific campaign by ID
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CampaignResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Get campaign by ID
+      tags:
+      - Email Campaigns
+    put:
+      consumes:
+      - application/json
+      description: Update a pending campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CampaignResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a campaign
+      tags:
+      - Email Campaigns
+  /api/email/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated email logs
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email logs
+      tags:
+      - Email
+  /api/email/logs/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific email log by ID
+      parameters:
+      - description: Email ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.EmailMessage'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email by ID
+      tags:
+      - Email
+  /api/email/send:
+    post:
+      consumes:
+      - application/json
+      description: Queue a single email for sending via Kafka
+      parameters:
+      - description: Email request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SendEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.EmailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Send a single email
+      tags:
+      - Email
+  /api/email/send-bulk:
+    post:
+      consumes:
+      - application/json
+      description: Queue multiple emails for sending via Kafka
+      parameters:
+      - description: Bulk email request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SendBulkEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/common.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.EmailResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Send bulk emails
+      tags:
+      - Email
   /api/scores/ai-demo:
     post:
       consumes:

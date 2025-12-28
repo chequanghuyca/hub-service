@@ -5,8 +5,14 @@ import (
 	"hub-service/docs"
 	"hub-service/infrastructure/database/database"
 	"hub-service/middleware"
+	emailConsumer "hub-service/module/email/consumer"
+	emailRepository "hub-service/module/email/repository"
+	"hub-service/module/email/scheduler"
+	emailSender "hub-service/module/email/sender"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -35,6 +41,25 @@ func main() {
 	// Initialize app context
 	appContext := appctx.NewAppContext(os.Getenv("SYSTEM_SECRET_KEY"), db)
 
+	// Start email consumer if Kafka is configured
+	if appContext.GetKafka() != nil {
+		emailRepo := emailRepository.NewEmailRepository(db.MongoDB.Database)
+		sender := emailSender.NewSMTPSender()
+		consumer := emailConsumer.NewEmailConsumer(
+			appContext.GetKafka(),
+			appContext.GetRedis(),
+			emailRepo,
+			sender,
+		)
+		consumer.Start()
+		defer consumer.Stop()
+
+		// Start campaign scheduler
+		campaignScheduler := scheduler.NewCampaignScheduler(appContext)
+		campaignScheduler.Start()
+		defer campaignScheduler.Stop()
+	}
+
 	// Setup router
 	r := gin.Default()
 
@@ -55,5 +80,15 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.PersistAuthorization(true)))
 
+	// Graceful shutdown
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+		<-sigint
+		log.Println("Shutting down gracefully...")
+		os.Exit(0)
+	}()
+
 	r.Run()
 }
+

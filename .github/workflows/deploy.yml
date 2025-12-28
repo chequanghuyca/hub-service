@@ -43,7 +43,7 @@ jobs:
                   port: 24700
                   script: |
                       # Create directory if not exists
-                      mkdir -p /app/hub-service
+                      mkdir -p /root/hub-service
 
             # 5. Copy docker-compose.yml to server
             - name: Copy docker-compose.yml
@@ -54,7 +54,7 @@ jobs:
                   key: ${{ secrets.SSH_KEY }}
                   port: 24700
                   source: 'docker-compose.yml'
-                  target: '/app/hub-service/'
+                  target: '/root/hub-service/'
 
             # 6. Execute Docker Compose
             - name: Execute Docker Compose
@@ -65,7 +65,7 @@ jobs:
                   key: ${{ secrets.SSH_KEY }}
                   port: 24700
                   script: |
-                      cd /app/hub-service
+                      cd /root/hub-service
 
                       echo "Updating .env for docker-compose..."
                       echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env

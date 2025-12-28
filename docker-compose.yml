@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     hub-service:
         image: ${DOCKER_USERNAME}/hub-service:${TAG}
@@ -27,7 +25,7 @@ services:
             - app-network
 
     kafka:
-        image: bitnami/kafka:latest
+        image: bitnami/kafka:3.6
         container_name: kafka
         restart: always
         ports:

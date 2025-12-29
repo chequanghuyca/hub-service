@@ -1221,7 +1221,7 @@ paths:
       - BearerAuth: []
       summary: List email campaigns
       tags:
-      - Email Campaigns
+      - email_campaigns
     post:
       consumes:
       - application/json
@@ -1253,7 +1253,7 @@ paths:
       - BearerAuth: []
       summary: Create a scheduled email campaign
       tags:
-      - Email Campaigns
+      - email_campaigns
   /api/email/campaigns/{id}:
     delete:
       consumes:
@@ -1280,7 +1280,7 @@ paths:
       - BearerAuth: []
       summary: Cancel a campaign
       tags:
-      - Email Campaigns
+      - email_campaigns
     get:
       consumes:
       - application/json
@@ -1311,7 +1311,7 @@ paths:
       - BearerAuth: []
       summary: Get campaign by ID
       tags:
-      - Email Campaigns
+      - email_campaigns
     put:
       consumes:
       - application/json
@@ -1348,7 +1348,7 @@ paths:
       - BearerAuth: []
       summary: Update a campaign
       tags:
-      - Email Campaigns
+      - email_campaigns
   /api/email/logs:
     get:
       consumes:
@@ -1376,7 +1376,7 @@ paths:
       - BearerAuth: []
       summary: Get email logs
       tags:
-      - Email
+      - email
   /api/email/logs/{id}:
     get:
       consumes:
@@ -1408,7 +1408,7 @@ paths:
       - BearerAuth: []
       summary: Get email by ID
       tags:
-      - Email
+      - email
   /api/email/send:
     post:
       consumes:
@@ -1441,7 +1441,7 @@ paths:
       - BearerAuth: []
       summary: Send a single email
       tags:
-      - Email
+      - email
   /api/email/send-bulk:
     post:
       consumes:
@@ -1476,7 +1476,7 @@ paths:
       - BearerAuth: []
       summary: Send bulk emails
       tags:
-      - Email
+      - email
   /api/scores/ai-demo:
     post:
       consumes:

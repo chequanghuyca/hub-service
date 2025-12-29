@@ -59,7 +59,7 @@ func RegisterRoutes(appCtx appctx.AppContext, router *gin.RouterGroup) {
 // SendEmail godoc
 // @Summary Send a single email
 // @Description Queue a single email for sending via Kafka
-// @Tags Email
+// @Tags email
 // @Accept json
 // @Produce json
 // @Param request body model.SendEmailRequest true "Email request"
@@ -86,7 +86,7 @@ func (h *EmailHandler) SendEmail(c *gin.Context) {
 // SendBulkEmails godoc
 // @Summary Send bulk emails
 // @Description Queue multiple emails for sending via Kafka
-// @Tags Email
+// @Tags email
 // @Accept json
 // @Produce json
 // @Param request body model.SendBulkEmailRequest true "Bulk email request"
@@ -113,7 +113,7 @@ func (h *EmailHandler) SendBulkEmails(c *gin.Context) {
 // GetEmailLogs godoc
 // @Summary Get email logs
 // @Description Get paginated email logs
-// @Tags Email
+// @Tags email
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number" default(1)
@@ -151,7 +151,7 @@ func (h *EmailHandler) GetEmailLogs(c *gin.Context) {
 // GetEmailByID godoc
 // @Summary Get email by ID
 // @Description Get a specific email log by ID
-// @Tags Email
+// @Tags email
 // @Accept json
 // @Produce json
 // @Param id path string true "Email ID"
@@ -179,7 +179,7 @@ func (h *EmailHandler) GetEmailByID(c *gin.Context) {
 // CreateCampaign godoc
 // @Summary Create a scheduled email campaign
 // @Description Create a new email campaign to be sent at scheduled time
-// @Tags Email Campaigns
+// @Tags email_campaigns
 // @Accept json
 // @Produce json
 // @Param request body model.CreateCampaignRequest true "Campaign request"
@@ -215,7 +215,7 @@ func (h *EmailHandler) CreateCampaign(c *gin.Context) {
 // ListCampaigns godoc
 // @Summary List email campaigns
 // @Description Get paginated list of email campaigns
-// @Tags Email Campaigns
+// @Tags email_campaigns
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number" default(1)
@@ -246,7 +246,7 @@ func (h *EmailHandler) ListCampaigns(c *gin.Context) {
 // GetCampaign godoc
 // @Summary Get campaign by ID
 // @Description Get a specific campaign by ID
-// @Tags Email Campaigns
+// @Tags email_campaigns
 // @Accept json
 // @Produce json
 // @Param id path string true "Campaign ID"
@@ -274,7 +274,7 @@ func (h *EmailHandler) GetCampaign(c *gin.Context) {
 // UpdateCampaign godoc
 // @Summary Update a campaign
 // @Description Update a pending campaign
-// @Tags Email Campaigns
+// @Tags email_campaigns
 // @Accept json
 // @Produce json
 // @Param id path string true "Campaign ID"
@@ -304,7 +304,7 @@ func (h *EmailHandler) UpdateCampaign(c *gin.Context) {
 // CancelCampaign godoc
 // @Summary Cancel a campaign
 // @Description Cancel a pending campaign
-// @Tags Email Campaigns
+// @Tags email_campaigns
 // @Accept json
 // @Produce json
 // @Param id path string true "Campaign ID"

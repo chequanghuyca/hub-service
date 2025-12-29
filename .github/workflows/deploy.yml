@@ -33,22 +33,22 @@ jobs:
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-            # 4. Deploy Hub Service on server
-            - name: Deploy Hub Service
+            # 4. Deploy trên server iNet cloud
+            - name: Deploy on server
               uses: appleboy/ssh-action@v0.1.10
               with:
                   host: ${{ secrets.SSH_HOST }}
                   username: ${{ secrets.SSH_USER }}
                   key: ${{ secrets.SSH_KEY }}
                   port: 24700
-                  command_timeout: 10m
                   script: |
                       echo "Stopping old hub-service..."
                       docker stop hub-service || true
                       docker rm hub-service || true
 
-                      echo "Cleaning old images..."
+                      echo "Cleaning old hub-service image..."
                       docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:latest || true
+                      docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }} || true
                       docker image prune -f
 
                       echo "Pulling new image..."
@@ -57,10 +57,9 @@ jobs:
                       echo "Starting hub-service..."
                       docker run -d \
                         --name hub-service \
-                        --network app-network \
                         --restart always \
                         -p 8081:8080 \
                         --env-file /root/hub-service.env \
                         ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-                      echo "Deployment successful!"
+                      echo "Hub Service deployed successfully!"

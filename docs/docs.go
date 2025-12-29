@@ -445,7 +445,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email Campaigns"
+                    "email_campaigns"
                 ],
                 "summary": "List email campaigns",
                 "parameters": [
@@ -499,7 +499,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email Campaigns"
+                    "email_campaigns"
                 ],
                 "summary": "Create a scheduled email campaign",
                 "parameters": [
@@ -556,7 +556,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email Campaigns"
+                    "email_campaigns"
                 ],
                 "summary": "Get campaign by ID",
                 "parameters": [
@@ -609,7 +609,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email Campaigns"
+                    "email_campaigns"
                 ],
                 "summary": "Update a campaign",
                 "parameters": [
@@ -671,7 +671,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email Campaigns"
+                    "email_campaigns"
                 ],
                 "summary": "Cancel a campaign",
                 "parameters": [
@@ -714,7 +714,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email"
+                    "email"
                 ],
                 "summary": "Get email logs",
                 "parameters": [
@@ -758,7 +758,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email"
+                    "email"
                 ],
                 "summary": "Get email by ID",
                 "parameters": [
@@ -813,7 +813,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email"
+                    "email"
                 ],
                 "summary": "Send a single email",
                 "parameters": [
@@ -870,7 +870,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Email"
+                    "email"
                 ],
                 "summary": "Send bulk emails",
                 "parameters": [

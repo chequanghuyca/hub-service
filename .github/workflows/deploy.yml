@@ -21,7 +21,7 @@ jobs:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
-            # 3. Build & Push Hub Service Image (tag cả latest + commit SHA)
+            # 3. Build & Push Hub Service Image
             - name: Build & Push Hub Service
               uses: docker/build-push-action@v5
               with:
@@ -33,53 +33,34 @@ jobs:
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:latest
                       ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
-            # 4. Deploy on server
-            - name: Deploy on server
+            # 4. Deploy Hub Service on server
+            - name: Deploy Hub Service
               uses: appleboy/ssh-action@v0.1.10
               with:
                   host: ${{ secrets.SSH_HOST }}
                   username: ${{ secrets.SSH_USER }}
                   key: ${{ secrets.SSH_KEY }}
                   port: 24700
+                  command_timeout: 10m
                   script: |
-                      # Create directory if not exists
-                      mkdir -p /root/hub-service
+                      echo "Stopping old hub-service..."
+                      docker stop hub-service || true
+                      docker rm hub-service || true
 
-            # 5. Copy docker-compose.yml to server
-            - name: Copy docker-compose.yml
-              uses: appleboy/scp-action@v0.1.4
-              with:
-                  host: ${{ secrets.SSH_HOST }}
-                  username: ${{ secrets.SSH_USER }}
-                  key: ${{ secrets.SSH_KEY }}
-                  port: 24700
-                  source: 'docker-compose.yml'
-                  target: '/root/hub-service/'
-
-            # 6. Execute Docker Compose
-            - name: Execute Docker Compose
-              uses: appleboy/ssh-action@v0.1.10
-              with:
-                  host: ${{ secrets.SSH_HOST }}
-                  username: ${{ secrets.SSH_USER }}
-                  key: ${{ secrets.SSH_KEY }}
-                  port: 24700
-                  script: |
-                      cd /root/hub-service
-
-                      echo "Updating .env for docker-compose..."
-                      echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
-                      echo "TAG=${{ github.sha }}" >> .env
-
-                      echo "Pulling latest images..."
-                      docker compose pull
-
-                      echo "Starting services..."
-                      # Migration: Remove old container if exists
-                      docker rm -f hub-service || true
-                      docker compose up -d --force-recreate --remove-orphans
-
-                      echo "Pruning old images..."
+                      echo "Cleaning old images..."
+                      docker rmi ${{ secrets.DOCKER_USERNAME }}/hub-service:latest || true
                       docker image prune -f
+
+                      echo "Pulling new image..."
+                      docker pull ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
+
+                      echo "Starting hub-service..."
+                      docker run -d \
+                        --name hub-service \
+                        --network app-network \
+                        --restart always \
+                        -p 8081:8080 \
+                        --env-file /root/hub-service.env \
+                        ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 
                       echo "Deployment successful!"

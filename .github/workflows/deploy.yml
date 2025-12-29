@@ -59,6 +59,7 @@ jobs:
                         --name hub-service \
                         --network app-network \
                         --dns 8.8.8.8 \
+                        --dns 8.8.4.4 \
                         --restart always \
                         -p 8081:8080 \
                         --env-file /root/hub-service.env \

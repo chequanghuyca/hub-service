@@ -57,6 +57,8 @@ jobs:
                       echo "Starting hub-service..."
                       docker run -d \
                         --name hub-service \
+                        --network app-network \
+                        --dns 8.8.8.8 \
                         --restart always \
                         -p 8081:8080 \
                         --env-file /root/hub-service.env \

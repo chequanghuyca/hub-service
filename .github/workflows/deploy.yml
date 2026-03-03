@@ -57,11 +57,13 @@ jobs:
                       echo "Starting hub-service..."
                       docker run -d \
                         --name hub-service \
-                        --network app-network \
-                        --dns 8.8.8.8 \
-                        --dns 8.8.4.4 \
+                        --network host \
                         --restart always \
-                        -p 8081:8080 \
+                        --add-host oauth2.googleapis.com:127.0.0.4 \
+                        --add-host www.googleapis.com:127.0.0.5 \
+                        --add-host ac-wjvx1uh-shard-00-00.ywb2dbq.mongodb.net:127.0.0.1 \
+                        --add-host ac-wjvx1uh-shard-00-01.ywb2dbq.mongodb.net:127.0.0.2 \
+                        --add-host ac-wjvx1uh-shard-00-02.ywb2dbq.mongodb.net:127.0.0.3 \
                         --env-file /root/hub-service.env \
                         ${{ secrets.DOCKER_USERNAME }}/hub-service:${{ github.sha }}
 

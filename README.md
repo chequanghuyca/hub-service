@@ -2,12 +2,12 @@
 
 ## ✨ Tính năng
 
--   **Xác thực người dùng**: Đăng ký, Đăng nhập sử dụng JWT (JSON Web Tokens).
--   **Quản lý người dùng**: Các API theo chuẩn CRUD (Create, Read, Update, Delete) cho module người dùng.
--   **Kiến trúc Layered**: Phân tách rõ ràng giữa các lớp Transport, Business, và Storage.
--   **Middleware**: Tích hợp sẵn middleware cho logging, phục hồi (recovery) và xác thực (authentication).
--   **Tài liệu API**: Tự động sinh tài liệu API với Swagger.
--   **Quản lý cấu hình**: Dễ dàng quản lý cấu hình môi trường qua file `.env`.
+- **Xác thực người dùng**: Đăng ký, Đăng nhập sử dụng JWT (JSON Web Tokens).
+- **Quản lý người dùng**: Các API theo chuẩn CRUD (Create, Read, Update, Delete) cho module người dùng.
+- **Kiến trúc Layered**: Phân tách rõ ràng giữa các lớp Transport, Business, và Storage.
+- **Middleware**: Tích hợp sẵn middleware cho logging, phục hồi (recovery) và xác thực (authentication).
+- **Tài liệu API**: Tự động sinh tài liệu API với Swagger.
+- **Quản lý cấu hình**: Dễ dàng quản lý cấu hình môi trường qua file `.env`.
 
 ## 🏗️ Kiến trúc Tổng quan
 
@@ -92,8 +92,8 @@ sequenceDiagram
 
 Để cải thiện trải nghiệm người dùng, thay vì bắt họ đăng nhập lại mỗi khi `access_token` (ngắn hạn) hết hạn, hệ thống sử dụng một `refresh_token` (dài hạn) để lấy một cặp token mới.
 
--   **Access Token**: Thời gian sống ngắn (ví dụ: 15 phút), dùng để truy cập tài nguyên.
--   **Refresh Token**: Thời gian sống dài (ví dụ: 30 ngày), chỉ dùng để lấy `access_token` mới.
+- **Access Token**: Thời gian sống ngắn (ví dụ: 15 phút), dùng để truy cập tài nguyên.
+- **Refresh Token**: Thời gian sống dài (ví dụ: 30 ngày), chỉ dùng để lấy `access_token` mới.
 
 Dưới đây là sơ đồ mô tả luồng hoạt động khi `access_token` hết hạn:
 
@@ -123,5 +123,5 @@ sequenceDiagram
     %% 3. Retry Original Request
     Client->>Server: GET /api/users (Header: Bearer new_access_token)
     Server->>Server: Xác thực Access Token mới -> Thành công
-    Server-->>Client: Dữ liệu người dùng
+    Server-->>Client: Dữ liệu người dùng.
 ```

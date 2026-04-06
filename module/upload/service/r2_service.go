@@ -58,12 +58,24 @@ func (s *R2Service) UploadToR2(fileHeader *multipart.FileHeader) (string, error)
 	uid := common.NewUID(uint32(time.Now().UnixNano()), 1, 0).String()
 
 	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
-	if ext == "" {
-		ext = ".bin"
+	allowedExts := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".gif":  true,
+		".webp": true,
+	}
+
+	if !allowedExts[ext] {
+		return "", fmt.Errorf("file type %s not allowed", ext)
+	}
+
+	contentType := fileHeader.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "image/") {
+		return "", fmt.Errorf("content type %s not allowed", contentType)
 	}
 
 	objectName := uid + ext
-	contentType := fileHeader.Header.Get("Content-Type")
 
 	_, err = s.client.PutObject(context.Background(), s.bucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {

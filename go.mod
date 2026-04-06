@@ -7,15 +7,18 @@ toolchain go1.24.1
 require (
 	github.com/bounoable/deepl v0.8.0
 	github.com/btcsuite/btcutil v1.0.2
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.94
+	github.com/redis/go-redis/v9 v9.17.2
+	github.com/segmentio/kafka-go v0.4.49
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
 	go.mongodb.org/mongo-driver v1.17.4
+	golang.org/x/oauth2 v0.34.0
 )
 
 require (
@@ -57,9 +60,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
-	github.com/redis/go-redis/v9 v9.17.2 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/segmentio/kafka-go v0.4.49 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
@@ -70,7 +71,6 @@ require (
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect

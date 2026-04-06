@@ -4,7 +4,7 @@ import (
 	"hub-service/core/auth/tokenprovider"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -23,7 +23,6 @@ func NewJWTProvider(secret string) *jwtProvider {
 	return &jwtProvider{secret: secret}
 }
 
-// customClaims represents the JWT claims.
 type customClaims struct {
 	Payload struct {
 		UserID    interface{} `json:"user_id"`
@@ -32,7 +31,7 @@ type customClaims struct {
 		FirstName string      `json:"first_name,omitempty"`
 		LastName  string      `json:"last_name,omitempty"`
 	} `json:"payload"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 // Generate generates a new token pair.
@@ -52,9 +51,9 @@ func (p *jwtProvider) Generate(data tokenprovider.TokenPayload, expiry int) (*to
 			FirstName: data.FirstName,
 			LastName:  data.LastName,
 		},
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expiry))),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
@@ -78,10 +77,10 @@ func (p *jwtProvider) Generate(data tokenprovider.TokenPayload, expiry int) (*to
 			FirstName: data.FirstName,
 			LastName:  data.LastName,
 		},
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			// Refresh token expires in 2 days
-			ExpiresAt: time.Now().Add(time.Hour * 24 * 2).Unix(),
-			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 2)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
@@ -105,14 +104,6 @@ func (p *jwtProvider) Validate(tokenStr string) (*tokenprovider.TokenPayload, er
 	})
 
 	if err != nil {
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, tokenprovider.ErrInvalidToken
-			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				// Token is either expired or not active yet
-				return nil, tokenprovider.ErrInvalidToken
-			}
-		}
 		return nil, tokenprovider.ErrInvalidToken
 	}
 
@@ -165,9 +156,9 @@ func (p *jwtProvider) GenerateAccessToken(data tokenprovider.TokenPayload, expir
 			FirstName: data.FirstName,
 			LastName:  data.LastName,
 		},
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expiry))),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "access_token",
 		},
 	}
@@ -196,9 +187,9 @@ func (p *jwtProvider) GenerateRefreshToken(data tokenprovider.TokenPayload, expi
 			FirstName: data.FirstName,
 			LastName:  data.LastName,
 		},
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Second * time.Duration(expiry)).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expiry))),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "refresh_token",
 		},
 	}
